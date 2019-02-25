@@ -1,0 +1,26 @@
+- name: install packages
+  tags: packages
+  package: name={{ item }} state=latest
+  with_items:
+    - openstack-dashboard
+
+- name: install lbaas packages
+  tags: packages
+  package: name={{ item }} state=latest
+  with_items:
+    - openstack-neutron-lbaas-ui
+  when: openstack_release != "mitaka"
+
+- name: install horizon configuration
+  tags: config
+  template: src={{ item }}.j2 dest=/etc/openstack-dashboard/{{ item }}
+  with_items:
+    - local_settings
+
+- name: start services
+  tags: service
+  service: name={{ item }}  state=restarted enabled=yes
+  when: not ansible_check_mode
+  with_items:
+    - memcached
+    - httpd

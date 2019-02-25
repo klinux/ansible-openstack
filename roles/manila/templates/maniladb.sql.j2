@@ -1,0 +1,8 @@
+{% if destroy_data %}
+DROP DATABASE IF EXISTS manila;
+{% endif %}
+CREATE DATABASE IF NOT EXISTS manila;
+
+GRANT ALL PRIVILEGES ON manila.* TO 'manila'@'localhost' IDENTIFIED BY '{{ maniladb_password }}';
+GRANT ALL PRIVILEGES ON manila.* TO 'manila'@'{{ ansible_hostname }}' IDENTIFIED BY '{{ maniladb_password }}';
+GRANT ALL PRIVILEGES ON manila.* TO 'manila'@'%' IDENTIFIED BY '{{ maniladb_password }}';

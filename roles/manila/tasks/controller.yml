@@ -1,0 +1,66 @@
+- name: install packages
+  tags: package
+  package: name={{ item }} state=latest
+  with_items:
+    - openstack-manila
+    - openstack-manila-ui
+    - python-manilaclient
+
+- name: install manila configuration
+  tags: config
+  template: src={{ item }}.j2 dest=/etc/manila/{{ item }}
+  with_items:
+    - manila.conf
+
+- block:
+  - name: copy db create template
+    template: src=maniladb.sql.j2 dest=/tmp/maniladb.sql
+
+  - name: create database
+    shell : mysql -u root < /tmp/maniladb.sql
+
+  - name: remove sql
+    file: path=/tmp/maniladb.sql state=absent
+
+  - name: list users
+    command: "openstack user list"
+    register: ulist
+
+  - block:
+      - command: "openstack user create --domain default --password {{ manila_password }} manila"
+      - command: "openstack role add --project service --user manila admin"
+      - command: "openstack service create --name manila --description 'OpenStack Shared File Systems' share"
+      - command: "openstack service create --name manilav2 --description 'OpenStack Shared File Systems' sharev2"
+      - command: "openstack endpoint create --region RegionOne share {{ item }} http://{{ internal_vip_address|default(groups['controller'][0]) }}:8786/v1/%(project_id)s"
+        with_items:
+          - internal
+          - public
+          - admin
+      - command: "openstack endpoint create --region RegionOne sharev2 {{ item }} http://{{ internal_vip_address|default(groups['controller'][0]) }}:8786/v2/%(project_id)s"
+        with_items:
+          - internal
+          - public
+          - admin
+    when: not ansible_check_mode and ulist.stdout.find("manila") < 0
+
+  - name: run manila db sync
+    command: manila-manage db sync
+    become: true
+    become_user: manila
+    when: not ansible_check_mode
+  run_once: true
+
+- name: start services
+  tags: service
+  service: name={{ item }} state=restarted enabled=yes
+  when: not ansible_check_mode
+  with_items:
+    - openstack-manila-api
+    - openstack-manila-scheduler
+
+- wait_for: port=8786
+
+- name: test manila api
+  tags: test
+  shell: manila service-list | grep '^| Id'
+  run_once: true

@@ -1,0 +1,113 @@
+openstack_release: mitaka
+
+destroy_data: True
+root_ssh_key: ''
+
+# openstack admin and demo passwords
+admin_password: YOUR_PASSWD
+demo_password: YOUR_PASSWD
+
+# root password for mariadb database
+mariadb_password: YOUR_PASSWD
+
+# rabbitmq password
+rabbitmq_password: YOUR_PASSWD
+
+# keystone database password
+keystonedb_password: YOUR_PASSWD
+
+# glance database password
+glancedb_password: YOUR_PASSWD
+glance_password: YOUR_PASSWD
+
+# cinder database password
+cinderdb_password: YOUR_PASSWD
+cinder_password: YOUR_PASSWD
+
+# manila database password
+maniladb_password: YOUR_PASSWD
+manila_password: YOUR_PASSWD
+
+# the required configuration, please provide empty partition device
+# see also http://docs.openstack.org/ocata/install-guide-rdo/cinder.html
+cinder_dev: /dev/sdb
+
+# nova database password
+novadb_password: YOUR_PASSWD
+nova_password: YOUR_PASSWD
+nova_placement_password: YOUR_PASSWD
+
+# virt type, kvm is default and the playbook test role is supposed to run with kvm.
+# can also be specified as host variable
+virt_type: qemu
+
+# neutroun database password
+neutrondb_password: YOUR_PASSWD
+neutron_password: YOUR_PASSWD
+
+# heat database password
+heatdb_password: YOUR_PASSWD
+heat_domain_password: YOUR_PASSWD
+heat_password: klinnux22
+
+# metadata password
+metadata_secret: YOUR_PASSWD
+
+# aodh database password
+aodhdb_password: YOUR_PASSWD
+aodh_domain_password: YOUR_PASSWD
+aodh_password: YOUR_PASSWD
+
+# ceilometer database password
+ceilometerdb_password: YOUR_PASSWD
+ceilometer_password: YOUR_PASSWD
+
+# swift settings
+swift_password: swift
+swift_hash_path_suffix: 39fe2de19b
+swift_hash_path_prefix: 7a2cac670f
+
+swift_storage_dir: /srv/node
+# important note:
+# file or a device can be used, if a device ( started with '/dev' ) it must be not mounted
+swift_storage_devices:
+  - /dev/sdb
+
+swift_device_size: 10G
+swift_replica_count: 1
+
+# provider network settings
+provider_network: public
+provider_nameserver: 1.1.1.1
+
+# the vip address for High available configurations. Required when more than 1 controller node specified
+# internal_vip_address: 192.168.168.234
+
+# the required configuration, please supply appropriate configuration
+# see also http://docs.openstack.org/ocata/install-guide-rdo/launch-instance-networks-public.html
+
+public_interface_name: ens33
+provider_allocation_pool: start=10.54.0.10,end=10.54.0.250
+provider_gateway: 10.54.0.1
+provider_network_cidr: 10.54.0.0/24
+
+selfservice_network: private
+selfservice_nameserver: 1.1.1.1
+selfservice_network_cidr: 192.168.1.0/24
+selfservice_gateway: 192.168.1.1
+
+# openstack environment, please do not change, unless you read the playbook and understand consequences.
+openstack_env:
+  OS_IDENTITY_API_VERSION: 3
+  OS_URL: http://{{ internal_vip_address|default(groups['controller'][0]) }}:35357/v3
+  OS_AUTH_URL: http://{{ internal_vip_address|default(groups['controller'][0]) }}:35357/v3
+  OS_PROJECT_DOMAIN_NAME: default
+  OS_USER_DOMAIN_NAME: default
+  OS_PROJECT_NAME: admin
+  OS_TENANT_NAME: admin
+  OS_USERNAME: admin
+  OS_PASSWORD: "{{ admin_password }}"
+  OS_IMAGE_API_VERSION: 2
+  OS_AUTH_VERSION: 3
+  OS_REGION_NAME: RegionOne
+
