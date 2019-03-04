@@ -1,6 +1,7 @@
 # Ansible Playbook: Openstack
 
 An ansible playbook to deploy openstack components to a cluster.
+
 # Overview
 Initially the playbook was composed with a primary purpose to learn openstack deployment in a nutshell. 
 
@@ -26,6 +27,7 @@ You are welcomed to read the playbook and feedback pull requests and suggestions
 * neutron controller
 * heat
 * horizon
+* manila
 
 # Description
 #### The playbook is able to setup the core services described in the [official guide](https://docs.openstack.org/install-guide/openstack-services.html#):
@@ -38,6 +40,7 @@ You are welcomed to read the playbook and feedback pull requests and suggestions
 * [**swift**](https://docs.openstack.org/swift/latest/)
 * [**ceilometer**](https://docs.openstack.org/ceilometer/latest/)
 * [**horizon**](https://docs.openstack.org/horizon/latest/)
+* [**manila**](https://docs.openstack.org/manila/latest/)
 
 The configuration is _very_ simple:
 

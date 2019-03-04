@@ -1,0 +1,108 @@
+- name: install packages
+  tags: package
+  package: name={{ item }} state=latest
+  with_items:
+    - openstack-designate*
+    - bind 
+    - bind-utils
+
+- name: install designate configuration
+  tags: config
+  template: src={{ item }}.j2 dest=/etc/designate/{{ item }}
+  with_items:
+    - designate.conf
+
+- name: Create directory /etc/designated
+  file:
+    dest: /etc/designate/
+    owner: designate
+    group: named
+    mode: 0750
+    recurse: yes
+
+- block:
+  - name: copy db create template
+    template: src=designatedb.sql.j2 dest=/tmp/designatedb.sql
+
+  - name: create database
+    shell : mysql -u root < /tmp/designatedb.sql
+
+  - name: remove sql
+    file: path=/tmp/designatedb.sql state=absent
+
+  - name: list users
+    command: "openstack user list"
+    register: ulist
+
+  - block:
+      - command: "openstack user create --domain default --password {{ designate_password }} designate"
+      - command: "openstack role add --project service --user designate admin"
+      - command: "openstack service create --name designate --description 'DNS' dns"
+      - command: "openstack endpoint create --region RegionOne dns {{ item }} http://{{ internal_vip_address|default(groups['controller'][0]) }}:9001"
+        with_items:
+          - internal
+          - public
+          - admin
+    when: not ansible_check_mode and ulist.stdout.find("designate") < 0
+
+  - name: run designate database sync
+    command: designate-manage database sync
+    become: true
+    become_user: designate
+    when: not ansible_check_mode
+  run_once: true
+
+- name: Create rndc file
+  command: "rndc-confgen -a -k designate -c /etc/designate/rndc.key -r /dev/urandom"
+
+- name: Change permission /etc/designate/rndc.key
+  file:
+    dest: /etc/designate/rndc.key
+    owner: named
+    group: designate
+    mode: 0660
+
+- name: install named.conf configuration
+  tags: config
+  template: src={{ item }}.j2 dest=/etc/{{ item }}
+  with_items:
+    - named.conf
+
+- name: start services
+  tags: service
+  service: name={{ item }} state=restarted enabled=yes
+  when: not ansible_check_mode
+  with_items:
+    - named
+    - designate-central
+    - designate-api
+
+- wait_for: port=9001
+
+- name: install pools.yaml  configuration
+  tags: config
+  template: src={{ item }}.j2 dest=/etc/designate/{{ item }}
+  with_items:
+    - pools.yaml 
+
+- block:
+  - name: run designate pool update
+    command: designate-manage pool update
+    become: true
+    become_user: designate
+    when: not ansible_check_mode
+  run_once: true
+
+- name: start worker, producer, mdns services
+  tags: service
+  service: name={{ item }} state=restarted enabled=yes
+  when: not ansible_check_mode
+  with_items:
+    - designate-worker 
+    - designate-producer
+    - designate-mdns
+
+- name: test designate api
+  tags: test
+  shell: openstack dns service list | grep '^| id'
+  run_once: true

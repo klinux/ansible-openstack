@@ -142,6 +142,13 @@
     - horizon
   environment: "{{ openstack_env }}"
 
+- name: install dns service
+  hosts: designate
+  tags: designate
+  roles:
+    - { role: designate, controller: true }
+  environment: "{{ openstack_env }}"
+
 - name: run tests
   hosts: controller
   tags: test

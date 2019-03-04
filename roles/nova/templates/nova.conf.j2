@@ -5,6 +5,7 @@ transport_url = rabbit://{% for host in groups['controller'] %}openstack:{{ rabb
 {% else %}
 rpc_backend = rabbit
 {% endif %}
+
 my_ip = {{ ansible_default_ipv4['address'] }}
 network_api_class = nova.network.neutronv2.api.API
 security_group_api = neutron

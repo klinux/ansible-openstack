@@ -1,66 +1,71 @@
-openstack_release: mitaka
+openstack_release: rocky
 
 destroy_data: True
 root_ssh_key: ''
 
 # openstack admin and demo passwords
-admin_password: YOUR_PASSWD
-demo_password: YOUR_PASSWD
+admin_password: <PASSWORD>
+demo_password: <PASSWORD>
 
 # root password for mariadb database
-mariadb_password: YOUR_PASSWD
+mariadb_password: <PASSWORD>
 
 # rabbitmq password
-rabbitmq_password: YOUR_PASSWD
+rabbitmq_password: <PASSWORD>
 
 # keystone database password
-keystonedb_password: YOUR_PASSWD
+keystonedb_password: <PASSWORD>
 
 # glance database password
-glancedb_password: YOUR_PASSWD
-glance_password: YOUR_PASSWD
+glancedb_password: <PASSWORD>
+glance_password: <PASSWORD>
 
 # cinder database password
-cinderdb_password: YOUR_PASSWD
-cinder_password: YOUR_PASSWD
+cinderdb_password: <PASSWORD>
+cinder_password: <PASSWORD>
 
 # manila database password
-maniladb_password: YOUR_PASSWD
-manila_password: YOUR_PASSWD
+maniladb_password: <PASSWORD>
+manila_password: <PASSWORD>
+
+# designate database password
+designatedb_password: <PASSWORD>
+designate_password: <PASSWORD>
+designate_dns: netk.inf.br
 
 # the required configuration, please provide empty partition device
 # see also http://docs.openstack.org/ocata/install-guide-rdo/cinder.html
 cinder_dev: /dev/sdb
 
 # nova database password
-novadb_password: YOUR_PASSWD
-nova_password: YOUR_PASSWD
-nova_placement_password: YOUR_PASSWD
+novadb_password: <PASSWORD>
+nova_password: <PASSWORD>
+nova_placement_password: <PASSWORD>
 
 # virt type, kvm is default and the playbook test role is supposed to run with kvm.
 # can also be specified as host variable
 virt_type: qemu
 
 # neutroun database password
-neutrondb_password: YOUR_PASSWD
-neutron_password: YOUR_PASSWD
+neutrondb_password: <PASSWORD>
+neutron_password: <PASSWORD>
 
 # heat database password
-heatdb_password: YOUR_PASSWD
-heat_domain_password: YOUR_PASSWD
+heatdb_password: <PASSWORD>
+heat_domain_password: <PASSWORD>
 heat_password: klinnux22
 
 # metadata password
-metadata_secret: YOUR_PASSWD
+metadata_secret: <PASSWORD>
 
 # aodh database password
-aodhdb_password: YOUR_PASSWD
-aodh_domain_password: YOUR_PASSWD
-aodh_password: YOUR_PASSWD
+aodhdb_password: <PASSWORD>
+aodh_domain_password: <PASSWORD>
+aodh_password: <PASSWORD>
 
 # ceilometer database password
-ceilometerdb_password: YOUR_PASSWD
-ceilometer_password: YOUR_PASSWD
+ceilometerdb_password: <PASSWORD>
+ceilometer_password: <PASSWORD>
 
 # swift settings
 swift_password: swift
@@ -76,25 +81,23 @@ swift_storage_devices:
 swift_device_size: 10G
 swift_replica_count: 1
 
-# provider network settings
-provider_network: public
-provider_nameserver: 1.1.1.1
-
 # the vip address for High available configurations. Required when more than 1 controller node specified
 # internal_vip_address: 192.168.168.234
 
 # the required configuration, please supply appropriate configuration
 # see also http://docs.openstack.org/ocata/install-guide-rdo/launch-instance-networks-public.html
-
+# provider network settings
 public_interface_name: ens33
+provider_network: public
+provider_nameserver: 1.1.1.1
 provider_allocation_pool: start=10.54.0.10,end=10.54.0.250
 provider_gateway: 10.54.0.1
 provider_network_cidr: 10.54.0.0/24
 
 selfservice_network: private
 selfservice_nameserver: 1.1.1.1
-selfservice_network_cidr: 192.168.1.0/24
-selfservice_gateway: 192.168.1.1
+selfservice_gateway: 192.168.2.1
+selfservice_network_cidr: 192.168.2.0/24
 
 # openstack environment, please do not change, unless you read the playbook and understand consequences.
 openstack_env:

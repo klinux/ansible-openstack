@@ -79,7 +79,7 @@
     - command: "neutron subnet-create --name {{ provider_network }} --allocation-pool {{ provider_allocation_pool }} --dns-nameserver {{ provider_nameserver }} --gateway {{ provider_gateway }} {{ provider_network }} {{ provider_network_cidr }}"
     - command: "neutron net-create {{ selfservice_network }}"
     - command: "neutron subnet-create --name {{ selfservice_network }} --dns-nameserver {{ selfservice_nameserver }} --gateway {{ selfservice_gateway }} {{ selfservice_network }} {{ selfservice_network_cidr }}"
-    - command: "neutron router-create router"
+    - command: "neutron router-create RouterDefault"
     - command: "neutron router-interface-add router {{ selfservice_network }}"
     - command: "neutron router-gateway-set router {{ provider_network }}"
     tags: net

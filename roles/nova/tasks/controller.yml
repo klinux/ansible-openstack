@@ -7,7 +7,13 @@
     - openstack-nova-console
     - openstack-nova-novncproxy
     - openstack-nova-scheduler
-    #- openstack-nova-placement-api
+
+- name: install aditional packages
+  tags: packages
+  package: name={{ item }} state=latest
+  with_items:
+    - openstack-nova-placement-api
+  when: openstack_release != "mitaka"
 
 - name: install nova configuration
   tags: config
@@ -58,17 +64,24 @@
           - admin
     when: not ansible_check_mode and ulist.stdout.find("nova") < 0
 
+  - name: permission /var/log/nova
+    file: dest=/var/log/nova owner=nova group=nova mode=u=rwX,g=rX,o=rX recurse=yes
+
   - name: run nova db sync
     block:
       - command: nova-manage {{ item }} 
         with_items:
           - "api_db sync"
         when: not ansible_check_mode
+        become: true
+        become_user: nova
       - command: nova-manage {{ item }}
         with_items:
           - "cell_v2 map_cell0"
           - "cell_v2 create_cell --name=cell1 --verbose"
         when: not ansible_check_mode and openstack_release != "mitaka"
+        become: true
+        become_user: nova
       - command: nova-manage {{ item }}
         with_items:
           - "db sync"

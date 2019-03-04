@@ -69,3 +69,6 @@ nova
 
 [horizon:children]
 controller-hosts
+
+[designate:children]
+controller-hosts

@@ -13,6 +13,10 @@
   template: src=keystone.conf.j2 dest=/etc/keystone/keystone.conf
   when: not ansible_check_mode
 
+- name: install policy.json
+  tags: config
+  copy: src=policy.json dest=/etc/keystone/policy.json
+
 - name: install httpd config
   tags: config
   copy: src=wsgi-keystone.conf dest=/etc/httpd/conf.d/wsgi-keystone.conf
@@ -28,8 +32,8 @@
   - "keystone-manage credential_setup --keystone-user keystone --keystone-group keystone"
   when: openstack_release != "mitaka"
 
-- name: permission var/log/keystone
-  command: "chown -R keystone /var/log/keystone"
+- name: permission /var/log/keystone
+  file: dest=/var/log/keystone owner=keystone group=keystone mode=u=rwX,g=rX,o=rX recurse=yes
 
 - name: start httpd
   tags: service
@@ -72,6 +76,7 @@
     - command: "openstack user create --domain default --password {{ demo_password }} demo"
     - command: "openstack role create user"
     - command: "openstack role add --project demo --user demo user"
+    - command: "openstack role add --user admin --domain default admin"
     when: not ansible_check_mode and plist.stdout.find("service") < 0
 
   run_once: true

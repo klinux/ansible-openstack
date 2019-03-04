@@ -59,10 +59,21 @@
     command: "openstack image list"
     register: imlist
     when: not ansible_check_mode
+  
+  - name: Check if file cirros-0.3.4-x86_64-disk.img exists
+    stat:
+      path: /tmp/cirros-0.3.4-x86_64-disk.img
+    register: cirros_qcow2
 
   - block:
     - name: get cirros image
       get_url: url=http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img dest=/tmp/cirros-0.3.4-x86_64-disk.img
+      when: cirros_qcow2.stat.exists == False
+      register: get_cirros_image
+    
+    - debug: 
+        msg: "cirros image was downloaded"
+      when: get_cirros_image is changed
 
     - name: upload the image
       command: "openstack image create 'cirros' --file /tmp/cirros-0.3.4-x86_64-disk.img --disk-format qcow2 --container-format bare --public"

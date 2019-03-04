@@ -1,16 +1,18 @@
 [DEFAULT]
 
-
 {% if openstack_release != "mitaka" %}
 transport_url = rabbit://{% for host in groups['controller'] %}openstack:{{ rabbitmq_password }}@{{ hostvars[host]['ansible_default_ipv4']['address'] }}{% if not loop.last %},{% endif %}{% endfor %}
 {% else %}
 rpc_backend = rabbit
 {% endif %}
+
+
 core_plugin = ml2
 service_plugins = router,neutron_lbaas.services.loadbalancer.plugin.LoadBalancerPluginv2
-allow_overlapping_ips = True
-notify_nova_on_port_status_changes = True
-notify_nova_on_port_data_changes = True
+allow_overlapping_ips = true
+notify_nova_on_port_status_changes = true
+external_dns_driver = designate
+notify_nova_on_port_data_changes = true
 nova_url = http://{{ internal_vip_address|default(groups['controller'][0]) }}:8774/v2
 
 [keystone_authtoken]
@@ -23,6 +25,7 @@ project_name = service
 username = neutron
 password = {{ neutron_password }}
 memcached_servers = {% for host in groups['controller'] %}{{ hostvars[host]['ansible_default_ipv4']['address'] }}:11211{% if not loop.last %},{% endif %}{% endfor %}
+
 
 [database]
 connection = mysql+pymysql://neutron:{{ neutrondb_password }}@{{ internal_vip_address|default(groups['controller'][0]) }}/neutron
@@ -49,3 +52,14 @@ lock_path = /var/lib/neutron/tmp
 
 [oslo_messaging_notifications]
 driver = messagingv2
+
+[designate]
+url = http://{{ internal_vip_address|default(groups['controller'][0]) }}:9001/v2
+admin_auth_url = http://{{ internal_vip_address|default(groups['controller'][0]) }}:35357/v2.0
+auth_uri = http://{{ internal_vip_address|default(groups['controller'][0]) }}:5000
+admin_username = neutron
+admin_password = {{ neutron_password }}
+admin_tenant_name = service
+allow_reverse_dns_lookup = True
+ipv4_ptr_zone_prefix_size = 24
+ipv6_ptr_zone_prefix_size = 116

@@ -2,7 +2,7 @@
   tags: package
   package: name={{ item }} state=latest
   with_items:
-    - openstack-ceilometer-api
+    # - openstack-ceilometer-api
     - openstack-ceilometer-collector
     - openstack-ceilometer-notification
     - openstack-ceilometer-central
@@ -48,7 +48,7 @@
   service: name={{ item }} state=restarted enabled=yes
   when: not ansible_check_mode
   with_items:
-    - openstack-ceilometer-api
+    # - openstack-ceilometer-api
     - openstack-ceilometer-notification
     - openstack-ceilometer-central
-    - openstack-ceilometer-collector
+    # - openstack-ceilometer-collector

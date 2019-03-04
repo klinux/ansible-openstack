@@ -2,13 +2,13 @@
 physical_interface_mappings = {{ provider_network }}:{{ public_interface_name }}
 
 [vxlan]
-enable_vxlan = True
+enable_vxlan = true
 local_ip = {{ ansible_default_ipv4['address'] }}
-l2_population = True
+l2_population = true
 
 [agent]
-prevent_arp_spoofing = True
+prevent_arp_spoofing = true
 
 [securitygroup]
-enable_security_group = True
+enable_security_group = true
 firewall_driver = neutron.agent.linux.iptables_firewall.IptablesFirewallDriver

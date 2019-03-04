@@ -1,0 +1,17 @@
+{% if destroy_data %}
+DROP DATABASE IF EXISTS designate;
+{% endif %}
+CREATE DATABASE IF NOT EXISTS designate CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+GRANT ALL PRIVILEGES ON designate.* TO 'designate'@'localhost' IDENTIFIED BY '{{ designatedb_password }}';
+GRANT ALL PRIVILEGES ON designate.* TO 'designate'@'{{ ansible_hostname }}' IDENTIFIED BY '{{ designatedb_password }}';
+GRANT ALL PRIVILEGES ON designate.* TO 'designate'@'%' IDENTIFIED BY '{{ designatedb_password }}';
+
+{% if destroy_data %}
+DROP DATABASE IF EXISTS designate_pool;
+{% endif %}
+CREATE DATABASE IF NOT EXISTS designate_pool CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+GRANT ALL PRIVILEGES ON designate_pool.* TO 'designate'@'localhost' IDENTIFIED BY '{{ designatedb_password }}';
+GRANT ALL PRIVILEGES ON designate_pool.* TO 'designate'@'{{ ansible_hostname }}' IDENTIFIED BY '{{ designatedb_password }}';
+GRANT ALL PRIVILEGES ON designate_pool.* TO 'designate'@'%' IDENTIFIED BY '{{ designatedb_password }}';

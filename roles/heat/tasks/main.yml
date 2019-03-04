@@ -6,6 +6,7 @@
     - openstack-heat-api-cfn
     - openstack-heat-engine
     - openstack-barbican
+    - openstack-heat-ui
     - python-barbicanclient
     - python-croniter
     - python-designateclient

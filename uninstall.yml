@@ -1,0 +1,373 @@
+- hosts: all
+  become: yes
+  tasks:
+  - block: 
+    - name: removing static repositories
+      file: path={{ item }} state=absent
+      with_items:
+      - /etc/yum.repos.d/CentOS-OpenStack-mitaka.repo
+      - /etc/yum.repos.d/CentOS-Ceph-Hammer.repo
+      when: openstack_release == "mitaka"
+    
+    - name: removing yum repository
+      package: name={{ item }} state=absent
+      with_items:
+        centos-release-openstack-{{ openstack_release }}
+      register: result
+      until: result is succeeded
+      when: openstack_release != "mitaka"
+
+    - name: removing modules
+      package: name={{ item }} state=absent
+      with_items:
+      - python-openstackclient
+      - openstack-selinux
+    
+    - name: removing limits
+      file: path=/etc/security/limits.d/30-openstack.conf state=absent
+    
+    - name: removing environment
+      file: path=/root/openstack-admin.rc state=absent
+
+    - name: removing workdir
+      file:
+        state: absent
+        path: "{{ inventory_dir }}/workdir/"
+    
+    - name: clear iptables
+      shell: iptables-save | awk '/^[*]/ { print $1 } /^:[A-Z]+ [^-]/ { print $1 " ACCEPT" ; } /COMMIT/ { print $0; }' | iptables-restore
+      ignore_errors: True
+
+- hosts: nova
+  become: yes
+  tasks:
+  - name: stop services
+    service: name={{ item }} state=stopped
+    with_items:
+    - libvirtd
+    - openstack-nova-compute
+    - openstack-ceilometer-compute
+    - ipset
+    failed_when: false
+
+  - block:
+    - block:
+      - name: Remove packages
+        package: name={{ item }} state=absent
+        with_items:
+        - openstack-nova-common
+        - python2-openstacksdk
+        - openstack-ceilometer-common
+        - openstack-ceilometer-compute
+        - openstack-neutron-common
+        - openstack-ceilometer-polling
+        - ipset
+        register: result
+        until: result is succeeded
+
+    - shell: systemctl daemon-reload
+      changed_when: False
+    
+    - shell: pkill -u qemu
+      ignore_errors: True
+  
+  - name: Remove remaining files
+    file: path={{ item }} state=absent
+    with_items:
+    - /etc/neutron
+    - /etc/nova
+    - /etc/ceilometer
+
+- hosts: controller
+  become: yes
+  tasks:
+  - name: Stop services
+    service: name={{ item }} state=stopped
+    with_items:
+    - openstack-nova-api
+    - openstack-nova-consoleauth
+    - openstack-nova-scheduler
+    - openstack-nova-conductor
+    - openstack-nova-novncproxy
+    - openstack-cinder-api
+    - openstack-cinder-scheduler
+    - openstack-ceilometer-api
+    - openstack-ceilometer-notification
+    - openstack-ceilometer-central
+    - openstack-ceilometer-collector
+    - openstack-glance-registry
+    - openstack-glance-api
+    - openstack-heat-api
+    - openstack-heat-api-cfn
+    - openstack-heat-engine
+    - openstack-manila-api
+    - openstack-manila-scheduler
+    - openstack-nova-api
+    - neutron-server
+    - neutron-linuxbridge-agent
+    - neutron-dhcp-agent
+    - neutron-metadata-agent
+    - neutron-l3-agent
+    - openstack-swift-proxy
+    - openstack-heat-api-cfn
+    - openstack-designate\*
+    - ipset
+    - httpd
+    failed_when: false
+
+  - block:
+    - block:
+      - name: Remove packages
+        package: name={{ item }} state=absent
+        with_items:
+          - openstack-ceilometer-api
+          - openstack-ceilometer-collector
+          - openstack-ceilometer-notification
+          - openstack-ceilometer-central
+          - openstack-ceilometer-alarm
+          - python-ceilometerclient
+          - openstack-cinder
+          - targetcli 
+          - python-keystone
+          - openstack-glance
+          - python-glance
+          - python-glanceclient
+          - openstack-heat-api
+          - openstack-heat-api-cfn
+          - openstack-heat-engine
+          - openstack-barbican
+          - python-barbicanclient
+          - python-croniter
+          - python-designateclient
+          - python-manilaclient
+          - python-zaqarclient
+          - python-openstack-mistral
+          - openstack-magnum-api
+          - python2-magnumclient
+          - openstack-dashboard
+          - openstack-keystone
+          - openstack-manila
+          - openstack-manila-ui
+          - python-manilaclient
+          - openstack-neutron
+          - openstack-neutron-ml2
+          - openstack-neutron-linuxbridge
+          - openstack-neutron-lbaas
+          - python-neutronclient
+          - openstack-nova-api
+          - openstack-nova-conductor
+          - openstack-nova-console
+          - openstack-nova-novncproxy
+          - openstack-nova-scheduler
+          - openstack-nova-placement-api
+          - openstack-swift-proxy
+          - python-swiftclient 
+          - python-keystoneclient
+          - python-keystonemiddleware
+          - memcached
+          - python-ceilometermiddleware
+          - python2-openstacksdk
+          - openstack-swift
+          - openstack-utils
+          - openstack-swift-container
+          - python-neutron-lib
+          - ipset
+          - ebtables
+          - httpd 
+          - mod_wsgi
+          - python-memcached
+          - haproxy
+          - rabbitmq-server
+          - mongodb
+          - mongodb-server 
+        register: result
+        until: result is succeeded
+
+    - shell: systemctl daemon-reload
+      changed_when: False
+  
+  - name: Remove remaining files
+    file: path={{ item }} state=absent
+    with_items:
+    - /etc/neutron
+    - /etc/nova
+    - /etc/manila
+    - /etc/ceilometer
+    - /var/lib/neutron
+    - /var/log/neutron
+    - /var/log/nova
+    - /var/log/swift
+    - /var/log/rabbitmq-server
+    - /var/log/keystone
+    - /var/log/manila
+    - /var/log/heat
+    - /var/log/glance
+    - /var/run/swift/
+    - /var/lib/ceilometer
+    - /var/lib/cinder
+    - /var/lib/glance
+    - /var/lib/heat
+    - /var/lib/keystone
+    - /var/lib/libvirt
+    - /var/lib/manila
+    - /var/lib/mongodb
+    - /var/lib/neutron
+    - /var/lib/nova
+    - /var/lib/rabbitmq
+    - /etc/httpd
+
+- hosts: 
+  - neutron
+  - manila
+  become: yes
+  tasks:
+  - name: Stop services
+    service: name={{ item }} state=stopped
+    with_items:
+    - openstack-nova-compute
+    - neutron-linuxbridge-agent
+    - neutron-lbaasv2-agent
+    - ipset
+    failed_when: false
+
+  - block:
+    - block:
+      - name: Remove packages
+        package: name={{ item }} state=absent
+        with_items:
+          - openstack-neutron
+          - openstack-neutron-linuxbridge
+          - openstack-neutron-lbaas
+          - ebtables
+          - haproxy
+          - ipset
+        register: result
+        until: result is succeeded
+
+    - shell: systemctl daemon-reload
+      changed_when: False
+  
+  - name: Remove remaining files
+    file: path={{ item }} state=absent
+    with_items:
+    - /etc/neutron
+    - /var/lib/neutron
+    - /var/log/neutron
+
+- hosts: cinder
+  become: yes
+  tasks:
+  - name: Stop services
+    service: name={{ item }} state=stopped
+    with_items:
+    - lvm2-lvmetad
+    - openstack-cinder-volume
+    - target
+    failed_when: false
+
+  - block:
+    - block:
+      - name: Remove packages
+        package: name={{ item }} state=absent
+        with_items:
+          - openstack-cinder
+          - targetcli 
+          - python-oslo-policy
+          - python-keystonemiddleware
+        register: result
+        until: result is succeeded
+
+    - shell: systemctl daemon-reload
+      changed_when: False
+    
+    - name: remove volume group
+      command: vgremove -y -ff cinder-volumes
+      ignore_errors: True
+
+    - name: remove volume
+      command: pvremove -y -ff {{ cinder_dev }}
+      ignore_errors: True
+  
+  - name: Remove remaining files
+    file: path={{ item }} state=absent
+    with_items:
+    - /etc/cinder
+    - /var/log/cinder
+    - /var/lib/cinder
+
+- hosts: swift
+  become: yes
+  tasks:
+  - name: Stop services
+    service: name={{ item }} state=stopped
+    with_items:
+    - openstack-swift-account
+    - openstack-swift-account-auditor
+    - openstack-swift-account-reaper
+    - openstack-swift-account-replicator
+    - openstack-swift-container
+    - openstack-swift-container-auditor
+    - openstack-swift-container-replicator
+    - openstack-swift-container-updater
+    - openstack-swift-object
+    - openstack-swift-object-auditor
+    - openstack-swift-object-replicator
+    - openstack-swift-object-updater
+    failed_when: false
+
+  - block:
+    - block:
+      - name: Remove packages
+        package: name={{ item }} state=absent
+        with_items:
+          - openstack-swift-account
+          - openstack-swift-container
+          - openstack-swift-object
+        register: result
+        until: result is succeeded
+
+    - shell: systemctl daemon-reload
+      changed_when: False
+
+    - shell: umount {{ swift_storage_devices }}
+      ignore_errors: True
+  
+  - name: Remove remaining files
+    file: path={{ item }} state=absent
+    with_items:
+    - /etc/swift
+    - /var/log/swift
+    - /var/lib/swift
+
+- hosts: manila
+  become: yes
+  tasks:
+  - name: Stop services
+    service: name={{ item }} state=stopped
+    with_items:
+    - openstack-manila-share
+    - neutron-linuxbridge-agent
+    failed_when: false
+
+  - block:
+    - block:
+      - name: Remove packages
+        package: name={{ item }} state=absent
+        with_items:
+          - openstack-neutron 
+          - openstack-neutron-linuxbridge 
+          - ebtables
+          - openstack-manila-share
+          - python2-PyMySQL
+        register: result
+        until: result is succeeded
+
+    - shell: systemctl daemon-reload
+      changed_when: False
+  
+  - name: Remove remaining files
+    file: path={{ item }} state=absent
+    with_items:
+    - /etc/manila
+    - /var/log/manila
+    - /var/lib/manila

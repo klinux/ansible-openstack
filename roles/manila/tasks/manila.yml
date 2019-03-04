@@ -25,6 +25,14 @@
   tags: config
   template: src=linuxbridge_agent.ini.j2 dest=/etc/neutron/plugins/ml2/linuxbridge_agent.ini
 
+- name: Create directory /var/lib/manila
+  file:
+    path: /var/lib/manila
+    state: directory
+    owner: manila
+    group: manila
+    mode: 0755
+
 - name: start services
   tags: service
   service: name={{ item }} state=restarted enabled=yes

@@ -8,6 +8,14 @@
     - python-oslo-policy
     - python-keystonemiddleware
 
+- name: clean volume group
+  command: vgremove cinder-volumes -y
+  ignore_errors: True
+
+- name: clean pv disk
+  command: pvremove -y -ff {{ cinder_dev }}
+  ignore_errors: True
+
 - name: create volume
   command: pvcreate -y -ff {{ cinder_dev }}
 

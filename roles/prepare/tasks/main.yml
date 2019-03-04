@@ -2,11 +2,11 @@
   package: name=centos-release-openstack-{{ openstack_release }} state=latest
   when: openstack_release != "mitaka"
 
-- name: copy repository openstack
+- name: copy repository openstack mitaka
   copy: src=CentOS-OpenStack-mitaka.repo dest=/etc/yum.repos.d/
   when: openstack_release == "mitaka"
 
-- name: copy repository ceph
+- name: copy repository ceph mitaka
   copy: src=CentOS-Ceph-Hammer.repo dest=/etc/yum.repos.d/
   when: openstack_release == "mitaka"
 

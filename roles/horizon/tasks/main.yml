@@ -17,6 +17,10 @@
   with_items:
     - local_settings
 
+- name: install keystone_policy.json
+  tags: config
+  copy: src=keystone_policy.json dest=/etc/openstack-dashboard/keystone_policy.json
+
 - name: start services
   tags: service
   service: name={{ item }}  state=restarted enabled=yes
