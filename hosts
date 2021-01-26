@@ -1,19 +1,19 @@
-### Fill with hosts that you want to install
 [controller-hosts]
-controller
+controller.openstack
 
 [compute-hosts]
-compute1
+computer01.openstack
+computer02.openstack
 
 [block-hosts]
-block1
+block01.openstack
 
 [object-hosts]
-object1
-object2
+object01.openstack ansible_ip_address=192.168.0.103
+object02.openstack ansible_ip_address=192.168.0.104
 
 [share-hosts]
-share
+share.openstack
 
 ### Adjust with groups correspondent
 [controller:children]

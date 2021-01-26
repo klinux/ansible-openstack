@@ -10,12 +10,17 @@ auth_strategy = keystone
 my_ip = {{ ansible_default_ipv4['address'] }}
 enabled_backends = lvm
 glance_api_servers = http://{{ internal_vip_address|default(groups['controller'][0]) }}:9292
+default_volume_type = public
+
+backup_driver = cinder.backup.drivers.swift.SwiftBackupDriver
 
 [lvm]
 volume_driver = cinder.volume.drivers.lvm.LVMVolumeDriver
 volume_group = cinder-volumes
-iscsi_protocol = iscsi
-iscsi_helper = lioadm
+# iscsi_protocol = iscsi
+# iscsi_helper = lioadm
+target_protocol = iscsi
+target_helper = lioadm
 volume_clear=none
 volume_clear_size=0
 

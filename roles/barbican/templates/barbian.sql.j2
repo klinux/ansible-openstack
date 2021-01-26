@@ -1,0 +1,9 @@
+{% if destroy_data %}
+DROP DATABASE IF EXISTS barbican;
+{% endif %}
+CREATE DATABASE IF NOT EXISTS barbican CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+GRANT ALL PRIVILEGES ON barbican.* TO 'barbican'@'localhost' IDENTIFIED BY '{{ barbican_password }}';
+GRANT ALL PRIVILEGES ON designate.* TO 'designate'@'{{ ansible_hostname }}' IDENTIFIED BY '{{ barbican_password }}';
+GRANT ALL PRIVILEGES ON barbican.* TO 'barbican'@'%' IDENTIFIED BY '{{ barbican_password }}';
+

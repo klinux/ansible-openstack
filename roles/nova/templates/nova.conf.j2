@@ -71,10 +71,8 @@ project_name = service
 admin_tenant_name = service
 username = neutron
 password = {{ neutron_password }}
-{% if ansible_hostname in groups['nova-controller'] %}
-service_metadata_proxy = True
+service_metadata_proxy = true
 metadata_proxy_shared_secret = {{ metadata_secret }}
-{% endif %}
 
 [oslo_messaging_notifications]
 driver = messagingv2

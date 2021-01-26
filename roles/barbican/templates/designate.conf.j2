@@ -1,0 +1,364 @@
+[DEFAULT]
+
+transport_url = rabbit://{% for host in groups['controller'] %}openstack:{{ rabbitmq_password }}@{{ hostvars[host]['ansible_default_ipv4']['address'] }}{% if not loop.last %},{% endif %}{% endfor %}
+
+#host = current_hostname
+default_ttl = 3600
+default_soa_refresh_min = 3500
+default_soa_refresh_max = 3600
+default_soa_retry = 600
+default_soa_expire = 86400
+default_soa_minimum = 3600
+supported_record_type = A,AAAA,CNAME,MX,SRV,TXT,SPF,NS,PTR,SSHFP,SOA
+network_api = neutron
+notify_api_faults = true
+notification_plugin = default
+quota_driver = storage
+quota_zones = 10
+quota_zone_recordsets = 500
+quota_zone_records = 500
+quota_recordset_records = 20
+quota_api_export_size = 1000
+xfr_timeout = 10
+#root_helper = sudo designate-rootwrap /etc/designate/rootwrap.conf
+backlog = 4096
+tcp_keepidle = 600
+debug = false
+graceful_shutdown_timeout = 60
+
+[cors]
+#allowed_origin = <None>
+#allow_credentials = true
+#expose_headers = X-OpenStack-Request-ID,Host
+#max_age = 3600
+#allow_methods = GET,PUT,POST,DELETE,PATCH,HEAD
+#allow_headers = X-Auth-Token,X-Auth-Sudo-Tenant-ID,X-Auth-Sudo-Project-ID,X-Auth-All-Projects,X-Designate-Edit-Managed-Records,OpenStack-DNS-Hide-Counts
+
+[database]
+#sqlite_synchronous = true
+backend = sqlalchemy
+connection = mysql+pymysql://designate:{{ designatedb_password }}@{{ internal_vip_address|default(groups['controller'][0]) }}/designate
+#slave_connection = <None>
+#mysql_sql_mode = TRADITIONAL
+#mysql_enable_ndb = false
+connection_recycle_time = 3600
+#min_pool_size = 1
+#max_pool_size = 5
+#max_retries = 10
+#retry_interval = 10
+#max_overflow = 50
+#connection_debug = 0
+#connection_trace = false
+#pool_timeout = <None>
+use_db_reconnect = true
+#db_retry_interval = 1
+#db_inc_retry_interval = true
+#db_max_retry_interval = 10
+#db_max_retries = 20
+#connection_parameters =
+
+[handler:neutron_floatingip]
+#notification_topics = notifications
+#control_exchange = neutron
+#zone_id = <None>
+#formatv4 =
+#formatv6 =
+
+[handler:nova_fixed]
+#notification_topics = notifications
+#control_exchange = nova
+#zone_id = <None>
+#formatv4 =
+#formatv6 =
+
+[healthcheck]
+#detailed = false
+#backends =
+#disable_by_file_path = <None>
+#disable_by_file_paths =
+
+[heartbeat_emitter]
+#heartbeat_interval = 5.0
+#emitter_type = rpc
+
+[keystone_authtoken]
+auth_type = password
+username = designate
+password = {{ designate_password }}
+project_name = service
+project_domain_name = default
+user_domain_name = default
+www_authenticate_uri = http://{{ internal_vip_address|default(groups['controller'][0]) }}:5000/
+auth_url = http://{{ internal_vip_address|default(groups['controller'][0]) }}:5000/
+http_request_max_retries = 3
+token_cache_time = 300
+memcached_servers = {% for host in groups['controller'] %}{{ hostvars[host]['ansible_default_ipv4']['address'] }}:11211{% if not loop.last %},{% endif %}{% endfor %}
+
+
+[oslo_concurrency]
+#disable_process_locking = false
+#lock_path = $state_path
+
+[oslo_messaging_amqp]
+#container_name = <None>
+#idle_timeout = 0
+#trace = false
+#ssl = false
+#ssl_ca_file =
+#ssl_cert_file =
+#ssl_key_file =
+#ssl_key_password = <None>
+#ssl_verify_vhost = false
+#sasl_mechanisms =
+#sasl_config_dir =
+#sasl_config_name =
+#sasl_default_realm =
+#connection_retry_interval = 1
+#connection_retry_backoff = 2
+#connection_retry_interval_max = 30
+#link_retry_delay = 10
+#default_reply_retry = 0
+#default_reply_timeout = 30
+#default_send_timeout = 30
+#default_notify_timeout = 30
+#default_sender_link_timeout = 600
+#addressing_mode = dynamic
+#pseudo_vhost = true
+#server_request_prefix = exclusive
+#broadcast_prefix = broadcast
+#group_request_prefix = unicast
+#rpc_address_prefix = openstack.org/om/rpc
+#notify_address_prefix = openstack.org/om/notify
+#multicast_address = multicast
+#unicast_address = unicast
+#anycast_address = anycast
+#default_notification_exchange = <None>
+#default_rpc_exchange = <None>
+#reply_link_credit = 200
+#rpc_server_credit = 100
+#notify_server_credit = 100
+#pre_settled = rpc-cast
+#pre_settled = rpc-reply
+
+[oslo_messaging_notifications]
+driver = rabbit
+topics = notifications
+retry = -1
+transport_url = rabbit://{% for host in groups['controller'] %}openstack:{{ rabbitmq_password }}@{{ hostvars[host]['ansible_default_ipv4']['address'] }}{% if not loop.last %},{% endif %}{% endfor %}
+
+[oslo_messaging_rabbit]
+amqp_durable_queues = false
+amqp_auto_delete = false
+ssl = false
+#ssl_version =
+#ssl_key_file =
+#ssl_cert_file =
+#ssl_ca_file =
+kombu_reconnect_delay = 1.0
+#kombu_compression = <None>
+#kombu_missing_consumer_retry_timeout = 60
+#kombu_failover_strategy = round-robin
+rabbit_retry_interval = 1
+rabbit_retry_backoff = 2
+rabbit_interval_max = 30
+rabbit_ha_queues = false
+rabbit_transient_queues_ttl = 1800
+rabbit_qos_prefetch_count = 0
+heartbeat_timeout_threshold = 60
+heartbeat_rate = 2
+
+[oslo_middleware]
+max_request_body_size = 114688
+enable_proxy_headers_parsing = false
+
+[oslo_policy]
+#enforce_scope = false
+#policy_file = policy.json
+#policy_default_rule = default
+#policy_dirs = policy.d
+#remote_content_type = application/x-www-form-urlencoded
+#remote_ssl_verify_server_crt = false
+#remote_ssl_ca_crt_file = <None>
+#remote_ssl_client_crt_file = <None>
+#remote_ssl_client_key_file = <None>
+
+[pool_manager_cache:memcache]
+#expiration = 3600
+#memcached_servers = <None>
+
+[pool_manager_cache:sqlalchemy]
+#sqlite_synchronous = true
+#backend = sqlalchemy
+connection = mysql+pymysql://designate:{{ designatedb_password }}@{{ internal_vip_address|default(groups['controller'][0]) }}/designate_pool
+#slave_connection = <None>
+#mysql_sql_mode = TRADITIONAL
+#mysql_enable_ndb = false
+#connection_recycle_time = 3600
+#max_pool_size = 5
+#max_retries = 10
+#retry_interval = 10
+#max_overflow = 50
+#connection_debug = 0
+#connection_trace = false
+#pool_timeout = <None>
+#use_db_reconnect = false
+#db_retry_interval = 1
+#db_inc_retry_interval = true
+#db_max_retry_interval = 10
+#db_max_retries = 20
+#connection_parameters =
+
+[producer_task:delayed_notify]
+#interval = 5
+#per_page = 100
+#batch_size = 100
+
+[producer_task:periodic_exists]
+#interval = 3600
+#per_page = 100
+
+[producer_task:periodic_secondary_refresh]
+#interval = 3600
+#per_page = 100
+
+[producer_task:worker_periodic_recovery]
+#interval = 120
+#per_page = 100
+
+[producer_task:zone_purge]
+#interval = 3600
+#per_page = 100
+#time_threshold = 604800
+#batch_size = 100
+
+[proxy]
+#http_proxy = <None>
+#https_proxy = <None>
+#no_proxy =
+
+[service:agent]
+#workers = <None>
+#threads = 1000
+#listen = 0.0.0.0:5358
+#tcp_backlog = 100
+#tcp_recv_timeout = 0.5
+#allow_notify =
+#masters =
+#backend_driver = bind9
+#transfer_source = <None>
+#notify_delay = 0.0
+
+[service:api]
+listen = 0.0.0.0:9001
+auth_strategy = keystone
+enable_api_v2 = true
+enabled_extensions_v2 = quotas, reports
+quotas_verify_project_id = true
+api_base_uri = http://{{ internal_vip_address|default(groups['controller'][0]) }}:9001/
+#maintenance_mode = false
+#secure_proxy_ssl_header = X-Forwarded-Proto
+
+[service:central]
+#workers = <None>
+#threads = 1000
+#storage_driver = sqlalchemy
+#enabled_notification_handlers =
+#max_zone_name_len = 255
+#max_recordset_name_len = 255
+#managed_resource_email = hostmaster@example.com
+#managed_resource_tenant_id = 00000000-0000-0000-0000-000000000000
+#min_ttl = <None>
+#default_pool_id = 794ccc2c-d751-44fe-b57f-8894c9f5c842
+#central_topic = central
+#scheduler_filters = default_pool
+
+[service:mdns]
+#workers = <None>
+#threads = 1000
+#listen = 0.0.0.0:5354
+#tcp_backlog = 100
+#tcp_recv_timeout = 0.5
+#all_tcp = false
+#query_enforce_tsig = false
+#storage_driver = sqlalchemy
+#max_message_size = 65535
+#mdns_topic = mdns
+
+[service:pool_manager]
+#workers = <None>
+#threads = 1000
+#pool_id = 794ccc2c-d751-44fe-b57f-8894c9f5c842
+#enable_recovery_timer = true
+#periodic_recovery_interval = 120
+#enable_sync_timer = true
+#periodic_sync_interval = 1800
+#periodic_sync_seconds = 21600
+#periodic_sync_max_attempts = 3
+#periodic_sync_retry_interval = 30
+#cache_driver = memcache
+#pool_manager_topic = pool_manager
+
+[service:producer]
+#workers = <None>
+#threads = 1000
+#enabled_tasks = <None>
+#storage_driver = sqlalchemy
+
+[service:sink]
+#workers = <None>
+#threads = 1000
+#enabled_notification_handlers =
+#listener_pool_name = <None>
+
+[service:worker]
+enabled = True
+notify = True
+#workers = <None>
+#threads = 200
+#storage_driver = sqlalchemy
+#threshold_percentage = 100
+#poll_timeout = 30
+#poll_retry_interval = 15
+#poll_max_retries = 10
+#poll_delay = 5
+#export_synchronous = true
+#worker_topic = worker
+
+[ssl]
+#ca_file = <None>
+#cert_file = <None>
+#key_file = <None>
+#version = <None>
+#ciphers = <None>
+
+[storage:sqlalchemy]
+#sqlite_synchronous = true
+backend = sqlalchemy
+connection = mysql+pymysql://designate:{{ designatedb_password }}@{{ internal_vip_address|default(groups['controller'][0]) }}/designate
+#slave_connection = <None>
+#mysql_sql_mode = TRADITIONAL
+#mysql_enable_ndb = false
+connection_recycle_time = 3600
+#max_pool_size = 5
+#max_retries = 10
+#retry_interval = 10
+#max_overflow = 50
+#connection_debug = 0
+#connection_trace = false
+#pool_timeout = <None>
+use_db_reconnect = true
+#db_retry_interval = 1
+#db_inc_retry_interval = true
+#db_max_retry_interval = 10
+#db_max_retries = 20
+#connection_parameters =
+
+[network_api:neutron]
+endpoints = RegionOne|http://{{ internal_vip_address|default(groups['controller'][0]) }}:9696
+endpoint_type = publicURL
+timeout = 30
+#admin_username = designate
+#admin_password = designate
+#admin_tenant_name = designate
+auth_url = http://{{ internal_vip_address|default(groups['controller'][0]) }}:35357/v2.0
+auth_strategy = keystone

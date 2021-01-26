@@ -116,6 +116,7 @@
 
 - name: install swift object storage
   hosts: swift
+  gather_facts: yes
   tags: swift
   roles:
     - swift

@@ -2,9 +2,10 @@
   tags: packages
   package: name={{ item }} state=latest
   with_items:
-    - mariadb 
-    - mariadb-server-galera 
+    - mariadb
+    - mariadb-server-galera
     - MySQL-python
+    - https://repo.percona.com/yum/percona-release-latest.noarch.rpm
     - percona-xtrabackup
 
 - name: install mariadb config
@@ -14,7 +15,7 @@
 - name: destroy mariadb data
   shell: service mariadb stop; rm -rf /var/lib/mysql/{*,.sst}
   when: destroy_data
-  args: 
+  args:
     warn: false
 
 - name: start new galera cluster
@@ -46,7 +47,7 @@
 - name: destroy rabbitmq data
   shell: service rabbitmq-server stop; rm -rf /var/lib/rabbitmq/{*,.er*}
   when: destroy_data
-  args: 
+  args:
     warn: false
 
 - name: start rabbitmq
@@ -66,40 +67,44 @@
   command: rabbitmqctl set_permissions openstack ".*" ".*" ".*"
 
 - block:
-  - name: stop rabbitmq
-    service: name=rabbitmq-server state=stopped enabled=yes
-    when: not ansible_check_mode
+    - name: stop rabbitmq
+      service: name=rabbitmq-server state=stopped enabled=yes
+      when: not ansible_check_mode
 
-  - name: fetch cookie from {{ groups['database'][0] }}
-    fetch: src=/var/lib/rabbitmq/.erlang.cookie dest={{ inventory_dir }}/workdir/.erlang.cookie flat=yes
-    when: groups['database'].index(inventory_hostname) == 0
+    - name: fetch cookie from {{ groups['database'][0] }}
+      fetch: src=/var/lib/rabbitmq/.erlang.cookie dest={{ inventory_dir }}/workdir/.erlang.cookie flat=yes
+      when: groups['database'].index(inventory_hostname) == 0
 
-  - name: put cookie on cluster nodes
-    copy: dest=/var/lib/rabbitmq/.erlang.cookie src={{ inventory_dir }}/workdir/.erlang.cookie owner=rabbitmq group=rabbitmq mode=400
-    when: groups['database'].index(inventory_hostname) > 0
+    - name: put cookie on cluster nodes
+      copy: dest=/var/lib/rabbitmq/.erlang.cookie src={{ inventory_dir }}/workdir/.erlang.cookie owner=rabbitmq group=rabbitmq mode=400
+      when: groups['database'].index(inventory_hostname) > 0
 
-  - name: start rabbitmq
-    service: name=rabbitmq-server state=started enabled=yes
-    when: not ansible_check_mode
+    - name: start rabbitmq
+      service: name=rabbitmq-server state=started enabled=yes
+      when: not ansible_check_mode
 
-  - name: create rabbitmq cluster
-    command: rabbitmqctl {{ item }}
-    with_items:
-      - stop_app
-      - join_cluster --ram rabbit@{{ groups['database'][0] }}
-      - start_app
-    when: groups['database'].index(inventory_hostname) > 0
+    - name: create rabbitmq cluster
+      command: rabbitmqctl {{ item }}
+      with_items:
+        - stop_app
+        - join_cluster --ram rabbit@{{ groups['database'][0] }}
+        - start_app
+      when: groups['database'].index(inventory_hostname) > 0
 
-  - name: ensure ha policy
-    command: "rabbitmqctl set_policy ha-all '^(?!amq\\.).*' '{\"ha-mode\": \"all\"}'"
-    when: groups['database'].index(inventory_hostname) == 0
+    - name: ensure ha policy
+      command: "rabbitmqctl set_policy ha-all '^(?!amq\\.).*' '{\"ha-mode\": \"all\"}'"
+      when: groups['database'].index(inventory_hostname) == 0
 
   when: groups['database']|count > 1
 
 - name: check rabbitmq cluster
   tags: test
-  shell: rabbitmqctl cluster_status | grep running_nodes | grep {{ item }}
+  shell: rabbitmqctl cluster_status | grep running_nodes | grep rabbit@
   with_items: "{{ groups['database'] }}"
+  retries: 10
+  delay: 3
+  register: rabbit_check
+  until: rabbit_check.rc == 0
 
 # memcached
 - name: install memcached packages
@@ -114,17 +119,31 @@
   service: name=memcached state=restarted enabled=yes
   when: not ansible_check_mode
 
+- name: install mongodb repo
+  tags: config
+  copy:
+    src: mongo-3.2.repo
+    dest: /etc/yum.repos.d/mongodb.repo
+
 - name: install mongodb packages
   tags: packages
   package: name={{ item }} state=latest
   with_items:
-    - mongodb
-    - mongodb-server 
+    - mongodb-org
+    - mongodb-org-mongos
+    - mongodb-org-server
+    - mongodb-org-shell
+    - mongodb-org-tools
 
 - name: install mongod config
   tags: config
-  copy: src=mongod.conf dest=/etc/mongod.conf
+  copy:
+    src: mongod.conf
+    dest: /etc/mongod.conf
 
 - name: start mongodb
-  service: name=mongod state=restarted enabled=yes
+  service:
+    name: mongod
+    state: restarted
+    enabled: yes
   when: not ansible_check_mode

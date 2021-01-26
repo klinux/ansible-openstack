@@ -1,36 +1,36 @@
-openstack_release: rocky
+openstack_release: stein
 
 destroy_data: True
 root_ssh_key: ''
 
 # openstack admin and demo passwords
-admin_password: <PASSWORD>
-demo_password: <PASSWORD>
+admin_password: ${PASSWORD}
+demo_password: ${PASSWORD}
 
 # root password for mariadb database
-mariadb_password: <PASSWORD>
+mariadb_password: ${PASSWORD}
 
 # rabbitmq password
-rabbitmq_password: <PASSWORD>
+rabbitmq_password: ${PASSWORD}
 
 # keystone database password
-keystonedb_password: <PASSWORD>
+keystonedb_password: ${PASSWORD}
 
 # glance database password
-glancedb_password: <PASSWORD>
-glance_password: <PASSWORD>
+glancedb_password: ${PASSWORD}
+glance_password: ${PASSWORD}
 
 # cinder database password
-cinderdb_password: <PASSWORD>
-cinder_password: <PASSWORD>
+cinderdb_password: ${PASSWORD}
+cinder_password: ${PASSWORD}
 
 # manila database password
-maniladb_password: <PASSWORD>
-manila_password: <PASSWORD>
+maniladb_password: ${PASSWORD}
+manila_password: ${PASSWORD}
 
 # designate database password
-designatedb_password: <PASSWORD>
-designate_password: <PASSWORD>
+designatedb_password: ${PASSWORD}
+designate_password: ${PASSWORD}
 designate_dns: netk.inf.br
 
 # the required configuration, please provide empty partition device
@@ -38,34 +38,34 @@ designate_dns: netk.inf.br
 cinder_dev: /dev/sdb
 
 # nova database password
-novadb_password: <PASSWORD>
-nova_password: <PASSWORD>
-nova_placement_password: <PASSWORD>
+novadb_password: ${PASSWORD}
+nova_password: ${PASSWORD}
+nova_placement_password: ${PASSWORD}
 
 # virt type, kvm is default and the playbook test role is supposed to run with kvm.
 # can also be specified as host variable
 virt_type: qemu
 
 # neutroun database password
-neutrondb_password: <PASSWORD>
-neutron_password: <PASSWORD>
+neutrondb_password: ${PASSWORD}
+neutron_password: ${PASSWORD}
 
 # heat database password
-heatdb_password: <PASSWORD>
-heat_domain_password: <PASSWORD>
+heatdb_password: ${PASSWORD}
+heat_domain_password: ${PASSWORD}
 heat_password: klinnux22
 
 # metadata password
-metadata_secret: <PASSWORD>
+metadata_secret: ${PASSWORD}
 
 # aodh database password
-aodhdb_password: <PASSWORD>
-aodh_domain_password: <PASSWORD>
-aodh_password: <PASSWORD>
+aodhdb_password: ${PASSWORD}
+aodh_domain_password: ${PASSWORD}
+aodh_password: ${PASSWORD}
 
 # ceilometer database password
-ceilometerdb_password: <PASSWORD>
-ceilometer_password: <PASSWORD>
+ceilometerdb_password: ${PASSWORD}
+ceilometer_password: ${PASSWORD}
 
 # swift settings
 swift_password: swift
@@ -78,7 +78,7 @@ swift_storage_dir: /srv/node
 swift_storage_devices:
   - /dev/sdb
 
-swift_device_size: 10G
+swift_device_size: 100G
 swift_replica_count: 1
 
 # the vip address for High available configurations. Required when more than 1 controller node specified
@@ -87,7 +87,7 @@ swift_replica_count: 1
 # the required configuration, please supply appropriate configuration
 # see also http://docs.openstack.org/ocata/install-guide-rdo/launch-instance-networks-public.html
 # provider network settings
-public_interface_name: ens33
+public_interface_name: enp0s9
 provider_network: public
 provider_nameserver: 1.1.1.1
 provider_allocation_pool: start=10.54.0.10,end=10.54.0.250
@@ -113,4 +113,3 @@ openstack_env:
   OS_IMAGE_API_VERSION: 2
   OS_AUTH_VERSION: 3
   OS_REGION_NAME: RegionOne
-

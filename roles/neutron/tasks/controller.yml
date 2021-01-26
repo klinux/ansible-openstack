@@ -1,6 +1,8 @@
 - name: install packages
   tags: packages
-  package: name={{ item }} state=latest
+  package:
+    name: "{{ item }}"
+    state: latest
   with_items:
     - openstack-neutron
     - openstack-neutron-ml2
@@ -12,54 +14,93 @@
 
 - name: install configurations
   tags: config
-  template: src=neutron.conf.j2 dest=/etc/neutron/neutron.conf
-- template: src=ml2_conf.ini.j2 dest=/etc/neutron/plugins/ml2/ml2_conf.ini
-- name: install configurations
+  template:
+    src: neutron.conf.j2
+    dest: /etc/neutron/neutron.conf
+
+- name: install ml2 config
   tags: config
-  template: src=linuxbridge_agent.ini.j2 dest=/etc/neutron/plugins/ml2/linuxbridge_agent.ini
-- copy: src=l3_agent.ini dest=/etc/neutron/l3_agent.ini
-- copy: src=dhcp_agent.ini dest=/etc/neutron/dhcp_agent.ini
-- template: src=neutron_lbaas.conf.j2 dest=/etc/neutron/neutron_lbaas.conf
-- template: src=metadata_agent.ini.j2 dest=/etc/neutron/metadata_agent.ini
-- file: src=/etc/neutron/plugins/ml2/ml2_conf.ini dest=/etc/neutron/plugin.ini state=link
+  template:
+    src: ml2_conf.ini.j2
+    dest: /etc/neutron/plugins/ml2/ml2_conf.ini
+
+- name: install linux bridge
+  tags: config
+  template:
+    src: linuxbridge_agent.ini.j2
+    dest: /etc/neutron/plugins/ml2/linuxbridge_agent.ini
+
+- name: install l3 agent
+  tags: config
+  copy:
+    src: l3_agent.ini
+    dest: /etc/neutron/l3_agent.ini
+
+- name: install dhcp agent
+  copy:
+    src: dhcp_agent.ini
+    dest: /etc/neutron/dhcp_agent.ini
+
+- name: install neutron lbaas
+  template:
+    src: neutron_lbaas.conf.j2
+    dest: /etc/neutron/neutron_lbaas.conf
+
+- name: install neutron metada agent
+  template:
+    src: metadata_agent.ini.j2
+    dest: /etc/neutron/metadata_agent.ini
+
+- name: install ml2 conf link
+  file:
+    src: /etc/neutron/plugins/ml2/ml2_conf.ini
+    dest: /etc/neutron/plugin.ini
+    state: link
   when: not ansible_check_mode
-- copy: src=dnsmasq-neutron.conf dest=/etc/neutron/dnsmasq-neutron.conf
+
+- name: install neutron dnsmasq config
+  copy:
+    src: dnsmasq-neutron.conf
+    dest: /etc/neutron/dnsmasq-neutron.conf
 
 - block:
-  - name: copy db create template
-    template: src=neutrondb.sql.j2 dest=/tmp/neutrondb.sql
+    - name: copy db create template
+      template: src=neutrondb.sql.j2 dest=/tmp/neutrondb.sql
 
-  - name: create database
-    shell : mysql -u root < /tmp/neutrondb.sql
+    - name: create database
+      shell: mysql -u root < /tmp/neutrondb.sql
 
-  - name: remove sql
-    file: path=/tmp/neutrondb.sql state=absent
+    - name: remove sql
+      file: path=/tmp/neutrondb.sql state=absent
 
-  - name: list users
-    command: "openstack user list"
-    register: ulist
+    - name: list users
+      command: "openstack user list"
+      register: ulist
 
-  - block:
-      - command: "openstack user create --domain default --password {{ neutron_password }} neutron"
-      - command: "openstack role add --project service --user neutron admin"
-      - command: "openstack service create --name neutron --description 'OpenStack Networking' network"
-      - command: "openstack endpoint create --region RegionOne network {{ item }} http://{{ internal_vip_address|default(groups['controller'][0]) }}:9696"
-        with_items:
-          - internal
-          - public
-          - admin
-    when: not ansible_check_mode and ulist.stdout.find("neutron") < 0
+    - block:
+        - command: "openstack user create --domain default --password {{ neutron_password }} neutron"
+        - command: "openstack role add --project service --user neutron admin"
+        - command: "openstack service create --name neutron --description 'OpenStack Networking' network"
+        - command: "openstack endpoint create --region RegionOne network {{ item }} http://{{ internal_vip_address|default(groups['controller'][0]) }}:9696"
+          with_items:
+            - internal
+            - public
+            - admin
+      when: not ansible_check_mode and ulist.stdout.find("neutron") < 0
 
-  - name: bootstrap database
-    command: neutron-db-manage --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugins/ml2/ml2_conf.ini upgrade head
-    become: true
-    become_user: neutron
-    when: not ansible_check_mode
+    - name: bootstrap database
+      command: neutron-db-manage --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugins/ml2/ml2_conf.ini upgrade head
+      become: true
+      become_user: neutron
+      when: not ansible_check_mode
   run_once: true
 
 - name: start services
   tags: service
-  service: name={{ item }} state=restarted enabled=yes
+  service:
+    name: "{{ item }}"
+    state: restarted
+    enabled: yes
   when: not ansible_check_mode
   with_items:
     - openstack-nova-api
@@ -70,20 +111,24 @@
     - neutron-l3-agent
 
 - block:
-  - name: list networks
-    command: "neutron net-list"
-    register: ulist
+    - name: list networks
+      command: "neutron net-list"
+      register: ulist
 
-  - block:
-    - command: "neutron net-create --shared --provider:physical_network {{ provider_network }} --provider:network_type flat {{ provider_network }} --router:external True"
-    - command: "neutron subnet-create --name {{ provider_network }} --allocation-pool {{ provider_allocation_pool }} --dns-nameserver {{ provider_nameserver }} --gateway {{ provider_gateway }} {{ provider_network }} {{ provider_network_cidr }}"
-    - command: "neutron net-create {{ selfservice_network }}"
-    - command: "neutron subnet-create --name {{ selfservice_network }} --dns-nameserver {{ selfservice_nameserver }} --gateway {{ selfservice_gateway }} {{ selfservice_network }} {{ selfservice_network_cidr }}"
-    - command: "neutron router-create RouterDefault"
-    - command: "neutron router-interface-add router {{ selfservice_network }}"
-    - command: "neutron router-gateway-set router {{ provider_network }}"
-    tags: net
-    become: true
-    become_user: neutron
-    when: not ansible_check_mode and ulist.stdout.find("private") < 0
+    - block:
+        - command: "neutron net-create --shared --provider:physical_network {{ provider_network }} --provider:network_type flat {{ provider_network }} --router:external True"
+        - command: "neutron subnet-create --name {{ provider_network }} --allocation-pool {{ provider_allocation_pool }} --dns-nameserver {{ provider_nameserver }} --gateway {{ provider_gateway }} {{ provider_network }} {{ provider_network_cidr }}"
+        - command: "neutron net-create {{ selfservice_network }}"
+        - command: "neutron subnet-create --name {{ selfservice_network }} --dns-nameserver {{ selfservice_nameserver }} --gateway {{ selfservice_gateway }} {{ selfservice_network }} {{ selfservice_network_cidr }}"
+        - command: "neutron router-create default"
+        - command: "neutron router-interface-add default {{ selfservice_network }}"
+        - command: "neutron router-gateway-set default {{ provider_network }}"
+          retries: 10
+          delay: 3
+          register: router_gateway_check
+          until: router_gateway_check.rc == 0
+      tags: net
+      become: true
+      become_user: neutron
+      when: not ansible_check_mode and ulist.stdout.find("private") < 0
   run_once: true

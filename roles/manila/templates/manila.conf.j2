@@ -86,7 +86,7 @@ service_instance_password = manila
 interface_driver = manila.network.linux.interface.BridgeInterfaceDriver
 
 [oslo_concurrency]
-lock_path = /var/lib/cinder/tmp
+lock_path = /var/lib/manila/tmp
 
 [oslo_messaging_notifications]
 {% if groups['ceilometer-controller']|count > 0 %}

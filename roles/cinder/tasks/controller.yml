@@ -1,6 +1,8 @@
 - name: install packages
   tags: package
-  package: name={{ item }} state=latest
+  package:
+    name: "{{ item }}"
+    state: latest
   with_items:
     - openstack-cinder
     - targetcli 
@@ -8,7 +10,9 @@
 
 - name: install cinder configuration
   tags: config
-  template: src={{ item }}.j2 dest=/etc/cinder/{{ item }}
+  template:
+    src: "{{ item }}.j2"
+    dest: "/etc/cinder/{{ item }}"
   with_items:
     - cinder.conf
 
@@ -49,6 +53,12 @@
           - admin
     when: not ansible_check_mode and ulist.stdout.find("cinder") < 0
 
+  - name: creating default public volume type
+    command: "openstack volume type create --description public --public public"
+
+  - name: creating default private volume type
+    command: "openstack volume type create --description private --private private"
+
   - name: run cinder db sync
     command: cinder-manage db sync
     become: true
@@ -58,13 +68,18 @@
 
 - name: start services
   tags: service
-  service: name={{ item }} state=restarted enabled=yes
+  service:
+    name: "{{ item }}"
+    stat: restarted
+    enabled: yes
   when: not ansible_check_mode
   with_items:
     - openstack-cinder-api
     - openstack-cinder-scheduler
+    - openstack-cinder-backup.service
 
-- wait_for: port=8776
+- wait_for:
+    port: 8776
 
 - name: test cinder api
   tags: test

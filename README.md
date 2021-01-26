@@ -57,6 +57,7 @@ After clinit package installed you’ll be able to stop, start and see status of
 
 # Configuration
 Services configuration performed using the hosts and variables files. 
+
 #### Hosts file:
 The empty  file is supplied with the playbook. Please examine [hosts](hosts) and supply appropriate host names. 
 **You must not remove any existing group**. Leave the group empty if you don't need services the group configures. The same hostname can be placed to any hosts group.
@@ -69,17 +70,23 @@ Please examine [group_vars/all](group_vars/all) and supply appropriate configura
 # Usage
 ## Prepare,verifty repositories configuration and perform a basic check:
 
-    ansible-playbook -i hosts -t prepare site.yml
-    ansible-playbook -i hosts -t check site.yml
+```sh
+ansible-playbook -i hosts -t prepare install.yml -u root -k
+ansible-playbook -i hosts -t check install.yml -u root -k
+```
 
 ## Deployment:
 
-    ansible-playbook -i hosts site.yml
+```sh
+ansible-playbook -i hosts install.yml -u root -k
+```
 
-if you have installed clinit, after deployment you can also run:
+se vc tem instalado o clinit, depois do deploy vc pode executar:
 
-    clinit -S workdir/services.xml status
-    clinit -S workdir/services.xml tree
+```sh
+clinit -S workdir/services.xml status
+clinit -S workdir/services.xml tree
+```
 
 #### Tags used in playbook:
 * **package** : install rpm packages

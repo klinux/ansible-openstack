@@ -1,6 +1,8 @@
 - name: install packages
   tags: package
-  package: name={{ item }} state=latest
+  package:
+    name: "{{ item }}"
+    state: latest
   with_items:
     - lvm2
     - openstack-cinder
@@ -24,13 +26,18 @@
 
 - name: install cinder configuration
   tags: config
-  template: src={{ item }}.j2 dest=/etc/cinder/{{ item }}
+  template:
+    src: "{{ item }}.j2"
+    dest: "/etc/cinder/{{ item }}"
   with_items:
     - cinder.conf
 
 - name: start services
   tags: service
-  service: name={{ item }} state=restarted enabled=yes
+  service:
+    name: "{{ item }}"
+    state: restarted
+    enabled: yes
   when: not ansible_check_mode
   with_items:
     - lvm2-lvmetad
