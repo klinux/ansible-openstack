@@ -1,12 +1,12 @@
+- include: gnocchi.yml
+  when: controller is defined
+
 - include: controller.yml
   when: controller is defined
 
 - include: aodh.yml
   when: controller is defined
   tags: aodh
-
-- include: gnocchi.yml
-  when: controller is defined
 
 - include: ceilometer-nova.yml
   when: controller is not defined

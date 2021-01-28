@@ -36,15 +36,11 @@
       command: "openstack user list"
       register: ulist
 
-    - name: list users
-      command: "openstack user list"
-      register: ulist
-
     - block:
         - command: "openstack user create --domain default --password {{ gnocchi_password }} gnocchi"
         - command: "openstack role add --project service --user gnocchi admin"
         - command: "openstack service create --name gnocchi --description 'Metric Service' metric"
-        - command: "openstack endpoint create --region RegionOne metering {{ item }} http://{{ internal_vip_address|default(groups['controller'][0]) }}:8041"
+        - command: "openstack endpoint create --region RegionOne metric {{ item }} http://{{ internal_vip_address|default(groups['controller'][0]) }}:8041"
           with_items:
             - internal
             - public

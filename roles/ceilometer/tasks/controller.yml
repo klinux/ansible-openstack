@@ -37,8 +37,8 @@
     - block:
         - command: "openstack user create --domain default --password {{ ceilometer_password }} ceilometer"
         - command: "openstack role add --project service --user ceilometer admin"
-        - command: "openstack service create --name ceilometer --description 'OpenStack Telemetry service' metering"
-        - command: "openstack endpoint create --region RegionOne metering {{ item }} http://{{ internal_vip_address|default(groups['controller'][0]) }}:8777"
+        # - command: "openstack service create --name ceilometer --description 'OpenStack Telemetry service' metering"
+        # - command: "openstack endpoint create --region RegionOne metering {{ item }} http://{{ internal_vip_address|default(groups['controller'][0]) }}:8777"
           with_items:
             - internal
             - public
