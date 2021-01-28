@@ -1,0 +1,26 @@
+Listen 8777
+
+<VirtualHost *:8777>
+    WSGIDaemonProcess trove-api user=trove processes=2 threads=4 display-name=trove
+    WSGIScriptAlias / /usr/lib/python2.7/site-packages/trove/cmd/app.wsgi
+    WSGIApplicationGroup %{GLOBAL}
+    WSGIProcessGroup trove-api
+    WSGIPassAuthorization On
+
+    ErrorLogFormat "%M"
+    ErrorLog /var/log/httpd/trove-api.log
+    CustomLog /var/log/httpd/trove-api-access.log combined
+
+
+    <Directory /usr/lib/python2.7/site-packages/trove/cmd>
+        WSGIProcessGroup trove-api
+        WSGIApplicationGroup %{GLOBAL}
+        <IfVersion >= 2.4>
+            Require all granted
+        </IfVersion>
+        <IfVersion < 2.4>
+            Order allow,deny
+            Allow from all
+        </IfVersion>
+    </Directory>
+</VirtualHost>

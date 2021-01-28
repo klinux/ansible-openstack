@@ -1,0 +1,3 @@
+- include: controller.yml
+  when: controller is defined
+

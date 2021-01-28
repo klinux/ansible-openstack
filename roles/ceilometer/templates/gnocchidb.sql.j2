@@ -1,0 +1,8 @@
+{% if destroy_data %}
+DROP DATABASE IF EXISTS gnocchi;
+{% endif %}
+CREATE DATABASE IF NOT EXISTS gnocchi;
+
+GRANT ALL PRIVILEGES ON gnocchi.* TO 'gnocchi'@'localhost' IDENTIFIED BY '{{ gnocchidb_password }}';
+GRANT ALL PRIVILEGES ON gnocchi.* TO 'gnocchi'@'{{ ansible_hostname }}' IDENTIFIED BY '{{ gnocchidb_password }}';
+GRANT ALL PRIVILEGES ON gnocchi.* TO 'gnocchi'@'%' IDENTIFIED BY '{{ gnocchidb_password }}';

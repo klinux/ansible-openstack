@@ -1,0 +1,47 @@
+[DEFAULT]
+
+transport_url = rabbit://{% for host in groups['controller'] %}openstack:{{ rabbitmq_password }}@{{ hostvars[host]['ansible_default_ipv4']['address'] }}{% if not loop.last %},{% endif %}{% endfor %}
+
+verbose = True
+log_dir = /var/log/cloudkitty
+auth_strategy = keystone
+api_paste_config = /etc/cloudkitty/api_paste.ini
+
+[database]
+connection = mysql+pymysql://{% for host in groups['controller'] %}cloudkitty:{{ cloudkittydb_password }}@{{ hostvars[host]['ansible_default_ipv4']['address'] }}/cloudkitty{% if not loop.last %},{% endif %}{% endfor %}
+
+[ks_auth]
+auth_type = password
+auth_protocol = http
+auth_url = http://{{ internal_vip_address|default(groups['controller'][0]) }}:5000/v3/
+identity_uri = http://{{ internal_vip_address|default(groups['controller'][0]) }}:5000/v3/
+username = cloudkitty
+password = {{ cloudkitty_password }}
+project_name = service
+user_domain_name = default
+project_domain_name = default
+memcached_servers = {% for host in groups['controller'] %}{{ hostvars[host]['ansible_default_ipv4']['address'] }}:11211{% if not loop.last %},{% endif %}{% endfor %}
+
+
+[keystone_authtoken]
+auth_section = ks_auth
+
+[fetcher_keystone]
+auth_section = ks_auth
+keystone_version = 3
+
+[fetcher]
+backend = keystone
+
+[storage]
+backend = sqlalchemy
+version = 1
+
+[collect]
+metrics_conf = /etc/cloudkitty/metrics.yml
+
+[collector_gnocchi]
+auth_section = ks_auth
+
+[oslo_concurrency]
+lock_path = /var/lib/cloudkitty/tmp

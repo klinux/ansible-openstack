@@ -1,0 +1,70 @@
+- name: install gnocchi packages
+  tags: package
+  package:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+    - openstack-gnocchi-api
+    - openstack-gnocchi-metricd
+    - python-gnocchiclient
+    - uwsgi
+    - uwsgi-plugin-python2
+
+- name: install gnocchi configuration
+  tags: config
+  template:
+    src: "{{ item }}.j2"
+    dest: "/etc/gnocchi/{{ item }}"
+  with_items:
+    - gnocchi.conf
+
+- block:
+    - name: copy db create template
+      template:
+        src: "gnocchidb.sql.j2"
+        dest: "/tmp/gnocchidb.sql"
+
+    - name: create database
+      shell: mysql -u root < /tmp/gnocchidb.sql
+
+    - name: remove sql
+      file:
+        path: "/tmp/gnocchidb.sql"
+        state: absent
+
+    - name: list users
+      command: "openstack user list"
+      register: ulist
+
+    - name: list users
+      command: "openstack user list"
+      register: ulist
+
+    - block:
+        - command: "openstack user create --domain default --password {{ gnocchi_password }} gnocchi"
+        - command: "openstack role add --project service --user gnocchi admin"
+        - command: "openstack service create --name gnocchi --description 'Metric Service' metric"
+        - command: "openstack endpoint create --region RegionOne metering {{ item }} http://{{ internal_vip_address|default(groups['controller'][0]) }}:8041"
+          with_items:
+            - internal
+            - public
+            - admin
+      when: not ansible_check_mode and ulist.stdout.find("gnocchi") < 0
+
+    - name: run gnocchi db_sync
+      command: gnocchi-upgrade
+      become: true
+      become_user: gnocchi
+      when: not ansible_check_mode
+  run_once: true
+
+- name: start services
+  tags: service
+  service:
+    name: "{{ item }}"
+    state: restarted
+    enabled: yes
+  when: not ansible_check_mode
+  with_items:
+    - openstack-gnocchi-api
+    - openstack-gnocchi-metricd

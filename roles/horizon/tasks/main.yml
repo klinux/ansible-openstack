@@ -6,14 +6,14 @@
   with_items:
     - openstack-dashboard
 
-- name: install lbaas packages
-  tags: packages
-  package:
-    name: "{{ item }}"
-    state: latest
-  with_items:
-    - openstack-neutron-lbaas-ui
-  when: openstack_release != "mitaka"
+# - name: install lbaas packages
+#   tags: packages
+#   package:
+#     name: "{{ item }}"
+#     state: latest
+#   with_items:
+#     - openstack-neutron-lbaas-ui
+#   when: openstack_release != "mitaka"
 
 - name: install horizon configuration
   tags: config

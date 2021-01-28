@@ -1,85 +1,83 @@
-openstack_release: train
+openstack_release: stein
 
 destroy_data: True
 root_ssh_key: ''
 
-dns_domain: cloudwise.com.br.
-
 # openstack admin and demo passwords
-admin_password: klinux22
-demo_password: klinux22
+admin_password: ${PASSWORD}
+demo_password: ${PASSWORD}
 
 # root password for mariadb database
-mariadb_password: klinux22
+mariadb_password: ${PASSWORD}
 
 # rabbitmq password
-rabbitmq_password: klinux22
+rabbitmq_password: ${PASSWORD}
 
 # keystone database password
-keystonedb_password: klinux22
+keystonedb_password: ${PASSWORD}
 
 # glance database password
-glancedb_password: klinux22
-glance_password: klinux22
+glancedb_password: ${PASSWORD}
+glance_password: ${PASSWORD}
 
 # cinder database password
-cinderdb_password: klinux22
-cinder_password: klinux22
+cinderdb_password: ${PASSWORD}
+cinder_password: ${PASSWORD}
 
 # manila database password
-maniladb_password: klinux22
-manila_password: klinux22
+maniladb_password: ${PASSWORD}
+manila_password: ${PASSWORD}
 
 # designate database password
-designatedb_password: klinux22
-designate_password: klinux22
-designate_dns: cloudwise.com.br
+designatedb_password: ${PASSWORD}
+designate_password: ${PASSWORD}
+designate_dns: netk.inf.br
 
 # trove database
-trovedb_password: klinux22
-trove_password: klinux22
+trovedb_password: ${PASSWORD}
+trove_password: ${PASSWORD}
 
 # cloudkitty database
-cloudkittydb_password: klinux22
-cloudkitty_password: klinux22
+cloudkittydb_password: ${PASSWORD}
+cloudkitty_password: ${PASSWORD}
 
 # the required configuration, please provide empty partition device
 # see also http://docs.openstack.org/ocata/install-guide-rdo/cinder.html
 cinder_dev: /dev/sdb
 
 # nova database password
-novadb_password: klinux22
-nova_password: klinux22
-nova_placement_password: klinux22
+novadb_password: ${PASSWORD}
+nova_password: ${PASSWORD}
+nova_placement_password: ${PASSWORD}
 
 # virt type, kvm is default and the playbook test role is supposed to run with kvm.
 # can also be specified as host variable
 virt_type: qemu
 
 # neutroun database password
-neutrondb_password: klinux22
-neutron_password: klinux22
+neutrondb_password: ${PASSWORD}
+neutron_password: ${PASSWORD}
 
 # heat database password
-heatdb_password: klinux22
-heat_domain_password: klinux22
+heatdb_password: ${PASSWORD}
+heat_domain_password: ${PASSWORD}
 heat_password: klinnux22
 
 # metadata password
-metadata_secret: klinux22
+metadata_secret: ${PASSWORD}
 
 # aodh database password
-aodhdb_password: klinux22
-aodh_domain_password: klinux22
-aodh_password: klinux22
+aodhdb_password: ${PASSWORD}
+aodh_domain_password: ${PASSWORD}
+aodh_password: ${PASSWORD}
 
 # ceilometer database password
-ceilometerdb_password: klinux22
-ceilometer_password: klinux22
+ceilometerdb_password: ${PASSWORD}
+ceilometer_password: ${PASSWORD}
 
 # gnocchi database password
-gnocchidb_password: klinux22
-gnocchi_password: klinux22
+gnocchidb_password: ${PASSWORD}
+gnocchi_password: ${PASSWORD}
 
 # swift settings
 swift_password: swift

@@ -72,3 +72,9 @@ controller-hosts
 
 [designate:children]
 controller-hosts
+
+[trove:children]
+controller-hosts
+
+[cloudkitty:children]
+controller-hosts

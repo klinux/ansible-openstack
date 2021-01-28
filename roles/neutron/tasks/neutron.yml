@@ -1,4 +1,4 @@
-- name: install packages
+- name: compute install packages
   tags: packages
   package:
     name: "{{ item }}"
@@ -6,12 +6,11 @@
   with_items:
     - openstack-neutron
     - openstack-neutron-linuxbridge
-    - openstack-neutron-lbaas
     - ebtables
     - ipset
     - haproxy
 
-- name: install configurations
+- name: compute install configurations
   tags: config
   template:
     src: "{{ item }}.j2"
@@ -26,7 +25,7 @@
     src: linuxbridge_agent.ini.j2
     dest: /etc/neutron/plugins/ml2/linuxbridge_agent.ini
 
-- name: start services
+- name: compute start services
   tags: service
   service:
     name: "{{ item }}"
@@ -36,4 +35,3 @@
   with_items:
     - openstack-nova-compute
     - neutron-linuxbridge-agent
-    - neutron-lbaasv2-agent

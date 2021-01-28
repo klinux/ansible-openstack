@@ -8,16 +8,18 @@ rpc_backend = rabbit
 
 
 core_plugin = ml2
-service_plugins = router,neutron_lbaas.services.loadbalancer.plugin.LoadBalancerPluginv2
+service_plugins = router
 allow_overlapping_ips = true
 notify_nova_on_port_status_changes = true
 external_dns_driver = designate
 notify_nova_on_port_data_changes = true
+dns_domain = {{ dns_domain }}
+
 nova_url = http://{{ internal_vip_address|default(groups['controller'][0]) }}:8774/v2
 
 [keystone_authtoken]
-auth_uri = http://{{ internal_vip_address|default(groups['controller'][0]) }}:5000
-auth_url = http://{{ internal_vip_address|default(groups['controller'][0]) }}:35357
+www_authenticate_uri = http://{{ internal_vip_address|default(groups['controller'][0]) }}:5000
+auth_url = http://{{ internal_vip_address|default(groups['controller'][0]) }}:5000
 auth_type = password
 project_domain_name = default
 user_domain_name = default

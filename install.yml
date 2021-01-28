@@ -150,6 +150,20 @@
     - { role: designate, controller: true }
   environment: "{{ openstack_env }}"
 
+- name: install trove service
+  hosts: trove
+  tags: trove
+  roles:
+    - { role: trove, controller: true }
+  environment: "{{ openstack_env }}"
+
+- name: install cloudkitty service
+  hosts: cloudkitty
+  tags: cloudkitty
+  roles:
+    - { role: cloudkitty, controller: true }
+  environment: "{{ openstack_env }}"
+
 - name: run tests
   hosts: controller
   tags: test

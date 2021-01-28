@@ -1,0 +1,56 @@
+[DEFAULT]
+
+# debug = false
+# verbose = true
+log_dir = /var/log/gnocchi
+
+[api]
+# paste_config = api-paste.ini
+auth_mode = keystone
+# max_limit = 1000
+# operation_timeout = 10
+host = 0.0.0.0
+port = 8041
+uwsgi_mode = http-socket
+
+[archive_policy]
+# default_aggregation_methods = mean,min,max,sum,std,count
+
+[keystone_authtoken]
+www_authenticate_uri = http://{{ internal_vip_address|default(groups['controller'][0]) }}:5000
+auth_url = http://{{ internal_vip_address|default(groups['controller'][0]) }}:5000
+auth_type = password
+project_domain_name = default
+user_domain_name = default
+project_name = service
+username = gnocchi
+password = {{ gnocchi_password }} 
+memcached_servers = {% for host in groups['controller'] %}{{ hostvars[host]['ansible_default_ipv4']['address'] }}:11211{% if not loop.last %},{% endif %}{% endfor %}
+
+
+[cors]
+#allowed_origin = <None>
+#allow_credentials = true
+#expose_headers =
+#max_age = 3600
+#allow_methods = OPTIONS,GET,HEAD,POST,PUT,DELETE,TRACE,PATCH
+#allow_headers = Authorization,X-Auth-Token,X-Subject-Token,X-User-Id,X-Domain-Id,X-Project-Id,X-Roles
+
+[indexer]
+url = mysql+pymysql://gnocchi:{{ aodhdb_password }}@{{ internal_vip_address|default(groups['controller'][0]) }}/gnocchi
+
+
+[metricd]
+workers = 2
+# metric_processing_delay = 60
+# greedy = true
+# metric_reporting_delay = 120
+# metric_cleanup_delay = 300
+# processing_replicas = 3
+
+[oslo_middleware]
+# enable_proxy_headers_parsing = false
+
+[storage]
+driver = file
+file_basepath = /var/lib/gnocchi

@@ -1,6 +1,8 @@
 - name: install packages
   tags: packages
-  package: name={{ item }} state=latest
+  package:
+    name: "{{ item }}"
+    state: latest
   with_items:
     - openstack-nova-api
     - openstack-nova-conductor
@@ -10,34 +12,68 @@
 
 - name: install aditional packages
   tags: packages
-  package: name={{ item }} state=latest
+  package:
+    name: "{{ item }}"
+    state: latest
   with_items:
-    - openstack-nova-placement-api
+    - openstack-placement-api
   when: openstack_release != "mitaka"
 
 - name: install nova configuration
   tags: config
-  template: src={{ item }}.j2 dest=/etc/nova/{{ item }}
+  template:
+    src: "{{ item }}.j2"
+    dest: "/etc/nova/{{ item }}"
   with_items:
     - nova.conf
 
+- name: install placement configuration
+  tags: config
+  template:
+    src: "{{ item }}.j2"
+    dest: "/etc/placement/{{ item }}"
+  with_items:
+    - placement.conf
+
 - name: install fixed httpd configuration
   tags: config
-  copy: src=00-nova-placement-api.conf dest=/etc/httpd/conf.d/00-nova-placement-api.conf
+  copy: 
+    src: "00-placement-api.conf" 
+    dest: "/etc/httpd/conf.d/00-placement-api.conf"
 
 - name: restart httpd
-  service: name=httpd state=restarted enabled=yes
+  service:
+    name: httpd
+    state: restarted
+    enabled: yes
   when: not ansible_check_mode
 
 - name: copy db create template
-  template: src=novadb.sql.j2 dest=/tmp/novadb.sql
+  template:
+    src: novadb.sql.j2
+    dest: /tmp/novadb.sql
+
+- name: copy placment create template
+  template:
+    src: placement.sql.j2
+    dest: /tmp/placement.sql
 
 - block:
   - name: create database
     shell : mysql -u root < /tmp/novadb.sql
 
+  - name: create database placement
+    shell : mysql -u root < /tmp/placement.sql
+
   - name: remove sql
-    file: path=/tmp/novadb.sql state=absent
+    file:
+      path: /tmp/novadb.sql
+      state: absent
+
+  - name: remove placement sql
+    file:
+      path: /tmp/placement.sql
+      state: absent
 
   - name: list users
     command: "openstack user list"
@@ -90,13 +126,22 @@
         become_user: nova
     run_once: true
 
+  - name: run placement db sync
+    command: placement-manage db sync
+    when: not ansible_check_mode
+    become: true
+    become_user: placement
+
 - name: start services
   tags: service
-  service: name={{ item }} state=restarted enabled=yes
+  service:
+    name: "{{ item }}"
+    state: restarted
+    enabled: yes
   when: not ansible_check_mode
   with_items:
     - openstack-nova-api
-    - openstack-nova-consoleauth
+    - openstack-nova-console
     - openstack-nova-scheduler
     - openstack-nova-conductor
     - openstack-nova-novncproxy

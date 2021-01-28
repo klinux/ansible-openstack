@@ -1,0 +1,8 @@
+{% if destroy_data %}
+DROP DATABASE IF EXISTS trove;
+{% endif %}
+CREATE DATABASE IF NOT EXISTS trove CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+GRANT ALL PRIVILEGES ON trove.* TO 'trove'@'localhost' IDENTIFIED BY '{{ trovedb_password }}';
+GRANT ALL PRIVILEGES ON trove.* TO 'trove'@'{{ ansible_hostname }}' IDENTIFIED BY '{{ trovedb_password }}';
+GRANT ALL PRIVILEGES ON trove.* TO 'trove'@'%' IDENTIFIED BY '{{ trovedb_password }}';

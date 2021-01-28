@@ -1,14 +1,26 @@
 - name: install packages
   tags: package
-  package: name={{ item }} state=latest
+  package:
+    name: "{{ item }}"
+    state: latest
   with_items:
-    - openstack-designate*
+    - openstack-designate-agent
+    - openstack-designate-api
+    - openstack-designate-central
+    - openstack-designate-common
+    - openstack-designate-mdns
+    - openstack-designate-producer
+    - openstack-designate-sink
+    - openstack-designate-ui
+    - openstack-designate-worker
     - bind 
     - bind-utils
 
 - name: install designate configuration
   tags: config
-  template: src={{ item }}.j2 dest=/etc/designate/{{ item }}
+  template:
+    src: "{{ item }}.j2"
+    dest: "/etc/designate/{{ item }}"
   with_items:
     - designate.conf
 
@@ -64,24 +76,33 @@
 
 - name: install named.conf configuration
   tags: config
-  template: src={{ item }}.j2 dest=/etc/{{ item }}
+  template:
+    src: "{{ item }}.j2"
+    dest: "/etc/{{ item }}"
   with_items:
     - named.conf
 
 - name: start services
   tags: service
-  service: name={{ item }} state=restarted enabled=yes
+  service:
+    name: "{{ item }}"
+    state: restarted
+    enabled: yes
   when: not ansible_check_mode
   with_items:
     - named
     - designate-central
     - designate-api
 
-- wait_for: port=9001
+- name: wait for port 
+  wait_for:
+    port: 9001
 
 - name: install pools.yaml  configuration
   tags: config
-  template: src={{ item }}.j2 dest=/etc/designate/{{ item }}
+  template:
+    src: "{{ item }}.j2"
+    dest: "/etc/designate/{{ item }}"
   with_items:
     - pools.yaml 
 
@@ -95,7 +116,10 @@
 
 - name: start worker, producer, mdns services
   tags: service
-  service: name={{ item }} state=restarted enabled=yes
+  service:
+    name: "{{ item }}"
+    state: restarted
+    enabled: yes
   when: not ansible_check_mode
   with_items:
     - designate-worker 

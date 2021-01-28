@@ -1,0 +1,48 @@
+[DEFAULT]
+
+transport_url = rabbit://{% for host in groups['controller'] %}openstack:{{ rabbitmq_password }}@{{ hostvars[host]['ansible_default_ipv4']['address'] }}{% if not loop.last %},{% endif %}{% endfor %}
+
+rpc_backend = rabbit
+log_dir = /var/log/trove
+auth_strategy = keystone
+add_addresses = True
+network_label_regex = ^NETWORK_LABEL$
+api_paste_config = /etc/trove/api-paste.ini
+trove_dns_support = False
+nova_keypair = devops
+# debug = True
+
+trove_auth_url = {% for host in groups['controller'] %}http://{{ hostvars[host]['ansible_default_ipv4']['address'] }}:5000/v3/{% if not loop.last %},{% endif %}{% endfor %}
+
+nova_compute_url = {% for host in groups['controller'] %}http://{{ hostvars[host]['ansible_default_ipv4']['address'] }}:8774/v2/{% if not loop.last %},{% endif %}{% endfor %}
+
+cinder_url = {% for host in groups['controller'] %}http://{{ hostvars[host]['ansible_default_ipv4']['address'] }}:8776/v2/{% if not loop.last %},{% endif %}{% endfor %}
+
+swift_url = {% for host in groups['controller'] %}http://{{ hostvars[host]['ansible_default_ipv4']['address'] }}:8080/v1/AUTH_{% if not loop.last %},{% endif %}{% endfor %}
+
+neutron_url = {% for host in groups['controller'] %}http://{{ hostvars[host]['ansible_default_ipv4']['address'] }}:9696/{% if not loop.last %},{% endif %}{% endfor %}
+
+
+[database]
+connection_recycle_time = 10
+max_pool_size = 10
+max_retries = -1
+connection = mysql+pymysql://{% for host in groups['controller'] %}trove:{{ trovedb_password }}@{{ hostvars[host]['ansible_default_ipv4']['address'] }}/trove{% if not loop.last %},{% endif %}{% endfor %}
+
+[keystone_authtoken]
+www_authenticate_uri = http://{{ internal_vip_address|default(groups['controller'][0]) }}:5000/v3/
+auth_url = http://{{ internal_vip_address|default(groups['controller'][0]) }}:35357/v3/
+auth_type = password
+project_domain_name = default
+user_domain_name = default
+project_name = service
+username = trove
+password = {{ trove_password }}
+service_token_roles_required = True
+memcached_servers = {% for host in groups['controller'] %}{{ hostvars[host]['ansible_default_ipv4']['address'] }}:11211{% if not loop.last %},{% endif %}{% endfor %}
+
+
+[oslo_concurrency]
+lock_path = /var/lib/trove/tmp
+
+

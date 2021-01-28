@@ -7,7 +7,10 @@
     - openstack-neutron
     - openstack-neutron-ml2
     - openstack-neutron-linuxbridge
-    - openstack-neutron-lbaas
+    - openstack-neutron-fwaas
+    - openstack-neutron-vpnaas
+    - openstack-neutron-bgp-dragent
+    - openstack-neutron-metering-agent
     - python-neutronclient
     - ebtables
     - ipset

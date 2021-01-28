@@ -1,0 +1,78 @@
+- name: install packages
+  tags: package
+  package:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+    - openstack-trove
+    - python-troveclient
+
+- name: install trove configuration
+  tags: config
+  template:
+    src: "{{ item }}.j2"
+    dest: "/etc/trove/{{ item }}"
+  with_items:
+    - trove.conf
+    - trove-taskmanager.conf
+    - trove-guestagent.conf
+    - trove-conductor.conf
+
+# - name: install trove wsgi
+#   tags: config
+#   template:
+#     src: "{{ item }}.j2"
+#     dest: "/etc/httpd/conf.d/{{ item }}"
+#   with_items:
+#     - wsgi-trove.conf
+
+- block:
+    - name: copy db create template
+      template:
+        src: "trove.sql.j2"
+        dest: "/tmp/trove.sql"
+
+    - name: create database
+      shell: mysql -u root < /tmp/trove.sql
+
+    - name: remove sql
+      file:
+        path: /tmp/trove.sql
+        state: absent
+
+    - name: list users
+      command: "openstack user list"
+      register: ulist
+
+    - block:
+        - command: "openstack user create --domain default --password {{ trove_password }} trove"
+        - command: "openstack role add --project service --user trove admin"
+        - command: "openstack service create --name trove --description 'DataBase' database"
+        - command: "openstack endpoint create --region RegionOne database {{ item }} http://{{ internal_vip_address|default(groups['controller'][0]) }}:8779/v1.0/%\\(tenant_id\\)s"
+          with_items:
+            - internal
+            - public
+            - admin
+      when: not ansible_check_mode and ulist.stdout.find("trove") < 0
+
+    - name: run trove database sync
+      command: trove-manage db_sync
+      become: true
+      become_user: trove
+      when: not ansible_check_mode
+  run_once: true
+
+- name: start services
+  tags: service
+  service:
+    name: "{{ item }}"
+    state: restarted
+    enabled: yes
+  when: not ansible_check_mode
+  with_items:
+    - openstack-trove-api
+    - openstack-trove-taskmanager
+    - openstack-trove-conductor
+
+- wait_for:
+    port: 8779

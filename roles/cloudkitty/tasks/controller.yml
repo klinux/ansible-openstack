@@ -1,0 +1,95 @@
+- name: install packages
+  tags: package
+  package:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+    - openstack-cloudkitty-api
+    - openstack-cloudkitty-processor
+    - openstack-cloudkitty-ui
+
+- name: install cloudkitty configuration
+  tags: config
+  template:
+    src: "{{ item }}.j2"
+    dest: "/etc/cloudkitty/{{ item }}"
+    mode: 0644
+  with_items:
+    - cloudkitty.conf
+    - metrics.yml
+
+- name: install cloudkitty wsgi
+  tags: config
+  template:
+    src: "{{ item }}.j2"
+    dest: "/etc/httpd/conf.d/{{ item }}"
+  with_items:
+    - wsgi-cloudkitty.conf
+
+- block:
+  - name: copy db create template
+    template:
+      src: "cloudkitty.sql.j2"
+      dest: "/tmp/cloudkitty.sql"
+
+  - name: create database
+    shell : mysql -u root < /tmp/cloudkitty.sql
+
+  - name: remove sql
+    file:
+      path: "/tmp/cloudkitty.sql"
+      state: absent
+
+  - name: list users
+    command: "openstack user list"
+    register: ulist
+
+  - block:
+      - command: "openstack user create cloudkitty --password {{ cloudkitty_password }} --email cloudkitty@localhost"
+      - command: "openstack role add --project service --user cloudkitty admin"
+      - command: "openstack role create rating"
+      - command: "openstack role add --project default --user cloudkitty rating"
+      - command: "openstack service create rating --name cloudkitty --description 'OpenStack Rating Service'"
+      - command: "openstack endpoint create --region RegionOne rating {{ item }} http://{{ internal_vip_address|default(groups['controller'][0]) }}:8889"      
+        with_items:
+          - internal
+          - public
+          - admin
+    when: not ansible_check_mode and ulist.stdout.find("cloudkitty") < 0
+
+- name: run cloudkitty database sync
+  command: cloudkitty-dbsync upgrade
+  become: true
+  become_user: cloudkitty
+  when: not ansible_check_mode
+  run_once: true
+
+- name: run cloudkitty storage init
+  command: cloudkitty-storage-init
+  become: true
+  become_user: cloudkitty
+  when: not ansible_check_mode
+  run_once: true
+
+- name: start services
+  tags: service
+  service:
+    name: "{{ item }}"
+    state: restarted
+    enabled: yes
+  when: not ansible_check_mode
+  with_items:
+    - cloudkitty-processor
+    - httpd
+
+- name: permission fix
+  file:
+    path: /etc/cloudkitty
+    state: directory
+    owner: cloudkitty
+    group: root
+    mode: 0755
+
+- wait_for:
+    port: 8889
+

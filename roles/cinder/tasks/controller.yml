@@ -53,12 +53,6 @@
           - admin
     when: not ansible_check_mode and ulist.stdout.find("cinder") < 0
 
-  - name: creating default public volume type
-    command: "openstack volume type create --description public --public public"
-
-  - name: creating default private volume type
-    command: "openstack volume type create --description private --private private"
-
   - name: run cinder db sync
     command: cinder-manage db sync
     become: true
@@ -70,13 +64,19 @@
   tags: service
   service:
     name: "{{ item }}"
-    stat: restarted
+    state: restarted
     enabled: yes
   when: not ansible_check_mode
   with_items:
     - openstack-cinder-api
     - openstack-cinder-scheduler
-    - openstack-cinder-backup.service
+    - openstack-cinder-backup
+
+- name: creating default public volume type
+  command: "openstack volume type create --description public --public public"
+
+- name: creating default private volume type
+  command: "openstack volume type create --description private --private private"
 
 - wait_for:
     port: 8776

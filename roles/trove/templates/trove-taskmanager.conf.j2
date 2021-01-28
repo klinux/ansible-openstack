@@ -1,0 +1,10 @@
+[DEFAULT]
+nova_proxy_admin_user = admin
+nova_proxy_admin_pass = {{ nova_password }}
+nova_proxy_admin_tenant_name = service
+taskmanager_manager = trove.taskmanager.manager.Manager
+
+use_nova_server_config_drive = True
+
+network_driver = trove.network.neutron.NeutronDriver
+network_label_regex = .*
