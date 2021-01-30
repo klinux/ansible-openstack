@@ -1,10 +1,17 @@
+- name: patch powertools repo
+  replace:
+    path: /etc/yum.repos.d/CentOS-Linux-PowerTools.repo
+    regexp: '(\s+)enabled\=0(\s+.*)?$'
+    replace: '\1enabled=1\2'
+    backup: yes
+
 - name: install packages
   tags: packages
   package: name={{ item }} state=latest
   with_items:
     - openstack-glance
-    - python-glance
-    - python-glanceclient
+    - python3-glance
+    - python3-glanceclient
 
 - name: install glance configuration
   template: src={{ item }}.j2 dest=/etc/glance/{{ item }}
@@ -49,8 +56,8 @@
   service: name={{ item }} state=restarted enabled=yes
   when: not ansible_check_mode
   with_items:
-    - openstack-glance-registry
     - openstack-glance-api
+    # - openstack-glance-registry
 
 - wait_for: port=9292
 

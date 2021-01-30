@@ -8,7 +8,7 @@
     - openstack-ceilometer-notification
     - openstack-ceilometer-central
     - openstack-ceilometer-alarm
-    - python-ceilometerclient
+    - python3-ceilometerclient
 
 - name: install configuration
   tags: config

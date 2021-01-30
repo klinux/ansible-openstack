@@ -1,3 +1,10 @@
+- name: patch powertools repo
+  replace:
+    path: /etc/yum.repos.d/CentOS-Linux-PowerTools.repo
+    regexp: '(\s+)enabled\=0(\s+.*)?$'
+    replace: '\1enabled=1\2'
+    backup: yes
+    
 - name: install packages
   tags: packages
   package:
@@ -14,6 +21,24 @@
     dest: "/etc/nova/{{ item }}"
   with_items:
     - nova.conf
+
+- name: install modprobe kvm
+  tags: config
+  template:
+    src: "{{ item }}.j2"
+    dest: "/etc/modprobe.d/{{ item }}"
+  with_items:
+    - kvm.conf
+  when: virt_type == "kvm"
+
+- name: install load kvm
+  tags: config
+  template:
+    src: "{{ item }}.j2"
+    dest: "/etc/modules-load.d/{{ item }}"
+  with_items:
+    - lkvm.conf
+  when: virt_type == "kvm"
 
 - name: start services
   tags: service

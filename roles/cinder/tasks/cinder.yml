@@ -1,3 +1,10 @@
+- name: patch powertools repo
+  replace:
+    path: /etc/yum.repos.d/CentOS-Linux-PowerTools.repo
+    regexp: '(\s+)enabled\=0(\s+.*)?$'
+    replace: '\1enabled=1\2'
+    backup: yes
+
 - name: install packages
   tags: package
   package:
@@ -7,8 +14,8 @@
     - lvm2
     - openstack-cinder
     - targetcli 
-    - python-oslo-policy
-    - python-keystonemiddleware
+    - python3-oslo-policy
+    - python3-keystonemiddleware
 
 - name: clean volume group
   command: vgremove cinder-volumes -y
@@ -40,6 +47,5 @@
     enabled: yes
   when: not ansible_check_mode
   with_items:
-    - lvm2-lvmetad
     - openstack-cinder-volume
     - target

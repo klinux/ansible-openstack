@@ -9,13 +9,13 @@
     - openstack-heat-engine
     - openstack-barbican
     - openstack-heat-ui
-    - python-barbicanclient
-    - python-croniter
-    - python-designateclient
-    - python-manilaclient
-    - python-zaqarclient
+    - python3-barbicanclient
+    - python3-croniter
+    - python3-designateclient
+    - python3-manilaclient
+    - python3-zaqarclient
     - openstack-magnum-api
-    - python2-magnumclient
+    - python3-magnumclient
 
 - name: install configuration
   template:

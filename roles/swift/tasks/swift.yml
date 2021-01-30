@@ -1,4 +1,11 @@
-- name: install packages
+- name: patch powertools repo
+  replace:
+    path: /etc/yum.repos.d/CentOS-Linux-PowerTools.repo
+    regexp: '(\s+)enabled\=0(\s+.*)?$'
+    replace: '\1enabled=1\2'
+    backup: yes
+
+- name: node install packages
   tags: package
   package: name={{ item }} state=latest
   with_items:
@@ -6,6 +13,7 @@
     - openstack-swift-container
     - openstack-swift-object
     - rsync
+    - rsync-daemon
     - xfsprogs
 
 - name: install rsync configuration
@@ -60,7 +68,12 @@
   when:  not ansible_check_mode
 
 - name: mount
-  mount: name={{ swift_storage_dir }}/{{ item|basename }} src={{ item }} fstype=xfs opts="noatime,nodiratime,nobarrier,logbufs=8" state=mounted
+  mount:
+    name: "{{ swift_storage_dir }}/{{ item|basename }}"
+    src: "{{ item }}"
+    fstype: xfs
+    opts: "noatime,nodiratime,logbufs=8"
+    state: mounted
   with_items: "{{ swift_storage_devices }}"
   when: not ansible_check_mode
 
@@ -76,7 +89,7 @@
     - container.ring.gz
     - object.ring.gz
 
-- name: start services
+- name: node start services
   tags: service
   service: name={{ item }} state=restarted enabled=yes
   when: not ansible_check_mode

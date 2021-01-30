@@ -24,8 +24,8 @@ rabbit_password = {{ rabbitmq_password }}
 {% endif %}
 
 [keystone_authtoken]
-auth_uri = http://{{ internal_vip_address|default(groups['controller'][0]) }}:5000
-auth_url = http://{{ internal_vip_address|default(groups['controller'][0]) }}:35357
+www_authenticate_uri = http://{{ internal_vip_address|default(groups['controller'][0]) }}:5000
+auth_url = http://{{ internal_vip_address|default(groups['controller'][0]) }}:5000
 auth_type = password
 project_domain_name = default
 user_domain_name = default
@@ -37,8 +37,8 @@ memcached_servers = {% for host in groups['controller'] %}{{ hostvars[host]['ans
 
 [neutron]
 url = http://{{ internal_vip_address|default(groups['controller'][0]) }}:9696
-auth_uri = http://{{ internal_vip_address|default(groups['controller'][0]) }}:5000
-auth_url = http://{{ internal_vip_address|default(groups['controller'][0]) }}:35357
+www_authenticate_uri = http://{{ internal_vip_address|default(groups['controller'][0]) }}:5000
+auth_url = http://{{ internal_vip_address|default(groups['controller'][0]) }}:5000
 auth_type = password
 project_domain_name = default
 user_domain_name = default
@@ -50,8 +50,8 @@ memcached_servers = {% for host in groups['controller'] %}{{ hostvars[host]['ans
 
 
 [nova]
-auth_uri = http://{{ internal_vip_address|default(groups['controller'][0]) }}:5000
-auth_url = http://{{ internal_vip_address|default(groups['controller'][0]) }}:35357
+www_authenticate_uri = http://{{ internal_vip_address|default(groups['controller'][0]) }}:5000
+auth_url = http://{{ internal_vip_address|default(groups['controller'][0]) }}:5000
 auth_type = password
 project_domain_name = default
 user_domain_name = default
@@ -63,8 +63,8 @@ memcached_servers = {% for host in groups['controller'] %}{{ hostvars[host]['ans
 
 
 [cinder]
-auth_uri = http://{{ internal_vip_address|default(groups['controller'][0]) }}:5000
-auth_url = http://{{ internal_vip_address|default(groups['controller'][0]) }}:35357
+www_authenticate_uri = http://{{ internal_vip_address|default(groups['controller'][0]) }}:5000
+auth_url = http://{{ internal_vip_address|default(groups['controller'][0]) }}:5000
 auth_type = password
 project_domain_name = default
 user_domain_name = default
@@ -80,7 +80,7 @@ share_backend_name = GENERIC
 share_driver = manila.share.drivers.generic.GenericShareDriver
 driver_handles_share_servers = True
 service_instance_flavor_id = 100
-service_image_name = manila-service-image
+service_image_name = share-image
 service_instance_user = manila
 service_instance_password = manila
 interface_driver = manila.network.linux.interface.BridgeInterfaceDriver

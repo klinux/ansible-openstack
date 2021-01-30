@@ -1,28 +1,49 @@
+- name: patch powertools repo
+  replace:
+    path: /etc/yum.repos.d/CentOS-Linux-PowerTools.repo
+    regexp: '(\s+)enabled\=0(\s+.*)?$'
+    replace: '\1enabled=1\2'
+    backup: yes
+
 - name: install {{ openstack_release }}
-  package: name=centos-release-openstack-{{ openstack_release }} state=latest
+  package:
+    name: "centos-release-openstack-{{ openstack_release }}"
+    state: latest
   when: openstack_release != "mitaka"
 
 - name: copy repository openstack mitaka
-  copy: src=CentOS-OpenStack-mitaka.repo dest=/etc/yum.repos.d/
+  copy:
+    src: "CentOS-OpenStack-mitaka.repo"
+    dest: /etc/yum.repos.d/
   when: openstack_release == "mitaka"
 
 - name: copy repository ceph mitaka
-  copy: src=CentOS-Ceph-Hammer.repo dest=/etc/yum.repos.d/
+  copy:
+    src: CentOS-Ceph-Hammer.repo
+    dest: /etc/yum.repos.d/
   when: openstack_release == "mitaka"
 
 - name: install support files for {{ openstack_release }}
-  package: name={{ item }} state=latest
+  package:
+    name: "{{ item }}"
+    state: latest
   with_items:
-    - python-openstackclient
+    - python3-openstackclient
     - openstack-selinux
     - epel-release.noarch
-    - ntp
+    - chrony.x86_64
 
 - name: setup limits
-  copy: src=limits-openstack.conf dest=/etc/security/limits.d/30-openstack.conf 
+  copy:
+    src: limits-openstack.conf
+    dest: /etc/security/limits.d/30-openstack.conf
 
 - name: generate environment
-  lineinfile: line="export {{ item.key }}={{ item.value }}" dest=/root/openstack-admin.rc state=present create=yes
+  lineinfile:
+    line: "export {{ item.key }}={{ item.value }}"
+    dest: /root/openstack-admin.rc
+    state: present
+    create: yes
   tags: config
   with_dict: "{{ openstack_env }}"
 

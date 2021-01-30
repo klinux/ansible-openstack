@@ -20,8 +20,8 @@ rabbit_password = {{ rabbitmq_password }}
 {% endif %}
 
 [keystone_authtoken]
-auth_uri = http://{{ internal_vip_address|default(groups['controller'][0]) }}:5000
-auth_url = http://{{ internal_vip_address|default(groups['controller'][0]) }}:35357
+www_authenticate_uri = http://{{ internal_vip_address|default(groups['controller'][0]) }}:5000
+auth_url = http://{{ internal_vip_address|default(groups['controller'][0]) }}:5000
 auth_type = password
 project_domain_name = default
 user_domain_name = default

@@ -3,9 +3,10 @@
   package: name={{ item }} state=latest
   with_items:
     - openstack-keystone 
+    - python3-keystoneclient
     - httpd 
-    - mod_wsgi
-    - python-memcached
+    - python3-mod_wsgi 
+    - python3-memcached
   when: not ansible_check_mode
 
 - name: install keystone configuration
@@ -20,17 +21,6 @@
 - name: install httpd config
   tags: config
   copy: src=wsgi-keystone.conf dest=/etc/httpd/conf.d/wsgi-keystone.conf
-
-- name: initialize fernet key repositories
-  command: "{{ item }}"
-  with_items:
-  - "keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone"
-
-- name: initialize credential_setup key
-  command: "{{ item }}"
-  with_items:
-  - "keystone-manage credential_setup --keystone-user keystone --keystone-group keystone"
-  when: openstack_release != "mitaka"
 
 - name: permission /var/log/keystone
   file: dest=/var/log/keystone owner=keystone group=keystone mode=u=rwX,g=rX,o=rX recurse=yes
@@ -56,11 +46,22 @@
     become_user: keystone
     when: not ansible_check_mode
 
+  - name: initialize fernet key repositories
+    command: "{{ item }}"
+    with_items:
+    - "keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone"
+
+  - name: initialize credential_setup key
+    command: "{{ item }}"
+    with_items:
+    - "keystone-manage credential_setup --keystone-user keystone --keystone-group keystone"
+    when: openstack_release != "mitaka"
+
   - name: bootstrap the identity service
     shell:
       cmd: | 
         keystone-manage bootstrap --bootstrap-password {{ admin_password }} \
-        --bootstrap-admin-url http://{{ internal_vip_address|default(groups['controller'][0]) }}:35357/v3/ \
+        --bootstrap-admin-url http://{{ internal_vip_address|default(groups['controller'][0]) }}:5000/v3/ \
         --bootstrap-internal-url http://{{ internal_vip_address|default(groups['controller'][0]) }}:5000/v3/ \
         --bootstrap-public-url http://{{ internal_vip_address|default(groups['controller'][0]) }}:5000/v3/ \
         --bootstrap-region-id RegionOne

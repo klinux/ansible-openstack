@@ -7,11 +7,10 @@
     - openstack-neutron
     - openstack-neutron-ml2
     - openstack-neutron-linuxbridge
-    - openstack-neutron-fwaas
     - openstack-neutron-vpnaas
     - openstack-neutron-bgp-dragent
     - openstack-neutron-metering-agent
-    - python-neutronclient
+    - python3-neutronclient
     - ebtables
     - ipset
 
@@ -115,17 +114,17 @@
 
 - block:
     - name: list networks
-      command: "neutron net-list"
+      command: "openstack network list"
       register: ulist
 
     - block:
-        - command: "neutron net-create --shared --provider:physical_network {{ provider_network }} --provider:network_type flat {{ provider_network }} --router:external True"
-        - command: "neutron subnet-create --name {{ provider_network }} --allocation-pool {{ provider_allocation_pool }} --dns-nameserver {{ provider_nameserver }} --gateway {{ provider_gateway }} {{ provider_network }} {{ provider_network_cidr }}"
-        - command: "neutron net-create {{ selfservice_network }}"
-        - command: "neutron subnet-create --name {{ selfservice_network }} --dns-nameserver {{ selfservice_nameserver }} --gateway {{ selfservice_gateway }} {{ selfservice_network }} {{ selfservice_network_cidr }}"
-        - command: "neutron router-create default"
-        - command: "neutron router-interface-add default {{ selfservice_network }}"
-        - command: "neutron router-gateway-set default {{ provider_network }}"
+        - command: "openstack network create --share --provider-physical-network {{ provider_network }} --provider-network-type flat {{ provider_network }} --external"
+        - command: "openstack subnet create --network {{ provider_network }} --subnet-range {{ provider_network_cidr }} --allocation-pool {{ provider_allocation_pool }} --dns-nameserver {{ provider_nameserver }} --gateway {{ provider_gateway }} {{ provider_network }}"
+        - command: "openstack network create {{ selfservice_network }}"
+        - command: "openstack subnet create --network {{ selfservice_network }} --dns-nameserver {{ selfservice_nameserver }} --gateway {{ selfservice_gateway }} --subnet-range {{ selfservice_network_cidr }} {{ selfservice_network }}"
+        - command: "openstack router create default"
+        - command: "openstack router add subnet default {{ selfservice_network }}"
+        - command: "openstack router set default --external-gateway {{ selfservice_network }}"
           retries: 10
           delay: 3
           register: router_gateway_check

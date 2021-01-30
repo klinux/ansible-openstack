@@ -17,6 +17,7 @@ instance_usage_audit_period = hour
 notify_on_state_change = vm_and_task_state
 use_neutron = True
 public_interface={{ public_interface_name }}
+default_availability_zone = az1
 
 {% if virt_type|default('kvm') == 'lxc' %}
 use_cow_images=False
@@ -44,8 +45,8 @@ memcached_servers = {% for host in groups['controller'] %}{{ hostvars[host]['ans
 api_servers  = http://{{ internal_vip_address|default(groups['controller'][0]) }}:9292
 
 [keystone_authtoken]
-auth_uri = http://{{ internal_vip_address|default(groups['controller'][0]) }}:5000
-auth_url = http://{{ internal_vip_address|default(groups['controller'][0]) }}:35357
+www_authenticate_uri = http://{{ internal_vip_address|default(groups['controller'][0]) }}:5000
+auth_url = http://{{ internal_vip_address|default(groups['controller'][0]) }}:5000
 auth_type = password
 project_domain_name = default
 user_domain_name = default
@@ -57,11 +58,12 @@ memcached_servers = {% for host in groups['controller'] %}{{ hostvars[host]['ans
 
 [libvirt]
 virt_type = {{ virt_type|default('kvm') }}
-hw_machine_type = x86_64=pc-i440fx-rhel7.2.0
+#hw_machine_type = x86_64=pc-i440fx-rhel7.2.0
 
 [neutron]
 url = http://{{ internal_vip_address|default(groups['controller'][0]) }}:9696
-auth_url = http://{{ internal_vip_address|default(groups['controller'][0]) }}:35357
+www_authenticate_uri = http://{{ internal_vip_address|default(groups['controller'][0]) }}:5000
+auth_url = http://{{ internal_vip_address|default(groups['controller'][0]) }}:5000
 auth_strategy = keystone
 auth_type = password
 project_domain_name = default
@@ -91,7 +93,7 @@ project_domain_name = Default
 project_name = service
 auth_type = password
 user_domain_name = Default
-auth_url = http://{{ internal_vip_address|default(groups['controller'][0]) }}:35357/v3
+auth_url = http://{{ internal_vip_address|default(groups['controller'][0]) }}:5000/v3
 username = placement
 password = {{ nova_placement_password }} 
 

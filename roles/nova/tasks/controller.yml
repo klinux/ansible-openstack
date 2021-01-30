@@ -6,9 +6,10 @@
   with_items:
     - openstack-nova-api
     - openstack-nova-conductor
-    - openstack-nova-console
+    #- openstack-nova-console
     - openstack-nova-novncproxy
     - openstack-nova-scheduler
+    - openstack-nova-spicehtml5proxy
 
 - name: install aditional packages
   tags: packages
@@ -141,7 +142,7 @@
   when: not ansible_check_mode
   with_items:
     - openstack-nova-api
-    - openstack-nova-console
+    # - openstack-nova-console
     - openstack-nova-scheduler
     - openstack-nova-conductor
     - openstack-nova-novncproxy

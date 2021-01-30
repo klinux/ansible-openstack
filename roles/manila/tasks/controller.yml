@@ -1,14 +1,18 @@
 - name: install packages
   tags: package
-  package: name={{ item }} state=latest
+  package:
+    name: "{{ item }}"
+    state: latest
   with_items:
     - openstack-manila
     - openstack-manila-ui
-    - python-manilaclient
+    - python3-manilaclient
 
 - name: install manila configuration
   tags: config
-  template: src={{ item }}.j2 dest=/etc/manila/{{ item }}
+  template:
+    src: "{{ item }}.j2"
+    dest: "/etc/manila/{{ item }}"
   with_items:
     - manila.conf
 
@@ -60,13 +64,18 @@
 
 - name: start services
   tags: service
-  service: name={{ item }} state=restarted enabled=yes
+  service:
+    name: "{{ item }}"
+    state: restarted
+    enabled: yes
   when: not ansible_check_mode
   with_items:
     - openstack-manila-api
     - openstack-manila-scheduler
 
-- wait_for: port=8786
+- name: wait for port
+  wait_for:
+    port: 8786
 
 - name: test manila api
   tags: test
@@ -98,11 +107,11 @@
       when: get_manila_service_image is changed
 
     - name: upload the image
-      command: "openstack image create 'manila-service-image' --file /tmp/manila-service-image-master.qcow2 --disk-format qcow2 --container-format bare --public"
+      command: "openstack image create 'share-image' --file /tmp/manila-service-image-master.qcow2 --disk-format qcow2 --container-format bare --private"
     when: not ansible_check_mode and imlist.stdout.find("manila-service-image") < 0
 
-  - name: Create flavor to manila-service-image
-    shell: openstack flavor create manila-service-flavor --id 100 --ram 256 --disk 0 --vcpus 1 --private
+  - name: Create flavor to share flavor
+    shell: openstack flavor create share-flavor --id 100 --ram 256 --disk 0 --vcpus 1 --private
   
   - name: Creating default share type
     shell: manila type-create default_share_type True

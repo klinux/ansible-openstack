@@ -3,11 +3,11 @@
   package: name={{ item }} state=latest
   with_items:
     - openstack-swift-proxy
-    - python-swiftclient
-    - python-keystoneclient
-    - python-keystonemiddleware
+    - python3-swiftclient
+    - python3-keystoneclient
+    - python3-keystonemiddleware
     - memcached
-    - python-ceilometermiddleware
+    - python3-ceilometermiddleware
 
 - name: install swift configuration
   tags: config

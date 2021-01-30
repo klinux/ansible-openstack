@@ -89,6 +89,7 @@
     owner: cloudkitty
     group: root
     mode: 0755
+    recurse: yes
 
 - wait_for:
     port: 8889

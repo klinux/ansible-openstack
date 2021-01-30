@@ -6,7 +6,7 @@
   with_items:
     - openstack-cinder
     - targetcli 
-    - python-keystone
+    - python3-keystone
 
 - name: install cinder configuration
   tags: config

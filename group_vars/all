@@ -1,4 +1,4 @@
-openstack_release: train
+openstack_release: victoria
 
 destroy_data: True
 root_ssh_key: ''
@@ -54,7 +54,7 @@ nova_placement_password: klinux22
 
 # virt type, kvm is default and the playbook test role is supposed to run with kvm.
 # can also be specified as host variable
-virt_type: qemu
+virt_type: kvm
 
 # neutroun database password
 neutrondb_password: klinux22
@@ -92,7 +92,7 @@ swift_storage_dir: /srv/node
 swift_storage_devices:
   - /dev/sdb
 
-swift_device_size: 100G
+swift_device_size: 150G
 swift_replica_count: 1
 
 # the vip address for High available configurations. Required when more than 1 controller node specified
@@ -101,11 +101,11 @@ swift_replica_count: 1
 # the required configuration, please supply appropriate configuration
 # see also http://docs.openstack.org/ocata/install-guide-rdo/launch-instance-networks-public.html
 # provider network settings
-public_interface_name: enp0s9
+public_interface_name: enp0s8
 provider_network: public
 provider_nameserver: 1.1.1.1
 provider_allocation_pool: start=10.54.0.10,end=10.54.0.250
-provider_gateway: 10.54.0.1
+provider_gateway: 10.54.0.254
 provider_network_cidr: 10.54.0.0/24
 
 selfservice_network: private
@@ -116,8 +116,8 @@ selfservice_network_cidr: 192.168.2.0/24
 # openstack environment, please do not change, unless you read the playbook and understand consequences.
 openstack_env:
   OS_IDENTITY_API_VERSION: 3
-  OS_URL: http://{{ internal_vip_address|default(groups['controller'][0]) }}:35357/v3
-  OS_AUTH_URL: http://{{ internal_vip_address|default(groups['controller'][0]) }}:35357/v3
+  OS_URL: http://{{ internal_vip_address|default(groups['controller'][0]) }}:5000/v3
+  OS_AUTH_URL: http://{{ internal_vip_address|default(groups['controller'][0]) }}:5000/v3
   OS_PROJECT_DOMAIN_NAME: default
   OS_USER_DOMAIN_NAME: default
   OS_PROJECT_NAME: admin

@@ -9,7 +9,7 @@
     - openstack-aodh-notifier
     - openstack-aodh-listener
     - openstack-aodh-expirer
-    - python-ceilometerclient
+    - python3-ceilometerclient
 
 - name: install configuration
   template:

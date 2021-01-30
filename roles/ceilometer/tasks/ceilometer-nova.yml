@@ -1,10 +1,10 @@
-- name: install packages
+- name: compute install packages
   tags: package
   package: name={{ item }} state=latest
   with_items:
     - openstack-ceilometer-compute
-    - python-ceilometerclient
-    - python-pecan
+    - python3-ceilometerclient
+    - python3-pecan
 
 - name: install configuration
   tags: config
